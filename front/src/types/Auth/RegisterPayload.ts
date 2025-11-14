@@ -1,0 +1,1 @@
+export type RegisterResponse = { email: string; password: string }

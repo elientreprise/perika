@@ -1,0 +1,10 @@
+api_platform:
+    title: app
+    version: 1.0.0
+    defaults:
+        url_generation_strategy: !php/const ApiPlatform\Metadata\UrlGeneratorInterface::ABS_URL
+        stateless: false
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+        normalization_context:
+            skip_null_values: false
