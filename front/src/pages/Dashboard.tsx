@@ -1,19 +1,31 @@
-import React from "react";
+import React, {useContext} from "react";
+import {AuthContext} from "../contexts/AuthContext.tsx";
+import {logout} from "../services/auth.ts";
 
 export default function Dashboard() {
+
+    const { removeUser } = useContext(AuthContext);
+    const handleClick= async (e: React.FormEvent) => {
+        e.preventDefault();
+        await logout();
+        removeUser();
+    };
+
     return (
         <div className="flex min-h-screen bg-base-200">
             <aside className="w-64 bg-base-100 shadow-lg p-5 flex flex-col justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold mb-8 text-primary">Mon Tableau de Bord</h1>
+                    <h1 className="text-2xl font-bold mb-8 text-primary">Mon dashboard</h1>
                     <nav className="flex flex-col gap-3">
-                        <a className="btn btn-ghost justify-start">🏠 Accueil</a>
-                        <a className="btn btn-ghost justify-start">📦 Produits</a>
-                        <a className="btn btn-ghost justify-start">👥 Utilisateurs</a>
+                        <a className="btn btn-ghost justify-start">🏠 RH </a>
+                        <a className="btn btn-ghost justify-start">📦 Finance </a>
+                        <a className="btn btn-ghost justify-start">👥 Academy </a>
                         <a className="btn btn-ghost justify-start">⚙️ Paramètres</a>
                     </nav>
                 </div>
-                <button className="btn btn-outline btn-error mt-10">Déconnexion</button>
+                <button className="btn btn-error" onClick={handleClick}>
+                    Déconnexion
+                </button>
             </aside>
             <main className="flex-1 p-10">
                 <header className="flex items-center justify-between mb-10">

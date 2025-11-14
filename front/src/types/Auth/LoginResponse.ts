@@ -1,1 +1,5 @@
-export type LoginPayload = { email: string; password: string }
+import type {UserType} from "../UserType.ts";
+
+export type LoginResponse = {
+    message: string; user: UserType
+}

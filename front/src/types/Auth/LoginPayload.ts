@@ -1,1 +1,1 @@
-export type LoginResponse = { email: string; password: string }
+export type LoginPayload = { email: string; password: string }
