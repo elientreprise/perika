@@ -42,4 +42,4 @@ jobs:
 
       - name: Run PHPUnit tests
         working-directory: ./back
-        run: ./vendor/bin/phpunit --testdox --configuration phpunit.xml
+        run: bin/phpunit --testdox --configuration phpunit.xml

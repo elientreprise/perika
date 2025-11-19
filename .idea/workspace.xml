@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8125a841-15e0-465e-8749-b317f0072d3f" name="Changes" comment="load fixtures for ci">
+    <list default="true" id="8125a841-15e0-465e-8749-b317f0072d3f" name="Changes" comment="fix phpunit config file">
       <change beforePath="$PROJECT_DIR$/.github/workflows/symfony.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/symfony.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -502,7 +503,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763563738761</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="fix phpunit config file">
+      <option name="closed" value="true" />
+      <created>1763563853001</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1763563853001</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -515,7 +524,8 @@
     <MESSAGE value="update github ci" />
     <MESSAGE value="add permissions for bin/console" />
     <MESSAGE value="load fixtures for ci" />
-    <option name="LAST_COMMIT_MESSAGE" value="load fixtures for ci" />
+    <MESSAGE value="fix phpunit config file" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix phpunit config file" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
