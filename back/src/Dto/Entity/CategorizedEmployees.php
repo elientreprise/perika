@@ -8,8 +8,13 @@ use Doctrine\Common\Collections\Collection;
 
 final class CategorizedEmployees
 {
+    /** @var Collection<int, User> */
     private Collection $orphans;
+
+    /** @var Collection<int, User> */
     private Collection $alreadyLinked;
+
+    /** @var Collection<int, User> */
     private Collection $notFounds;
 
     public function __construct()
@@ -19,16 +24,19 @@ final class CategorizedEmployees
         $this->notFounds = new ArrayCollection();
     }
 
+    /** @return Collection<int, User> */
     public function getOrphans(): Collection
     {
         return $this->orphans;
     }
 
+    /** @return Collection<int, User> */
     public function getAlreadyLinked(): Collection
     {
         return $this->alreadyLinked;
     }
 
+    /** @return Collection<int, User> */
     public function getNotFounds(): Collection
     {
         return $this->notFounds;

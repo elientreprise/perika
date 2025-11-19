@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-class ApiExceptionSubscriber implements EventSubscriberInterface
+readonly class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     public function __construct(private bool $debug = false)
     {

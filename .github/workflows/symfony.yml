@@ -17,22 +17,29 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: mbstring, intl, pdo_mysql
           coverage: none
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
         working-directory: ./back
-        
+
+      - name: Fix permissions
+        working-directory: ./back
+        run: |
+          chmod +x bin/console
+          chmod +x bin/phpunit
+
       - name: Create test database
         working-directory: ./back
         run: |
           cp .env.test .env
           bin/console doctrine:database:create --env=test --no-interaction || true
           bin/console doctrine:schema:create --env=test --no-interaction
+          bin/console doctrine:fixtures:load --env=test --no-interaction
+      
 
       - name: Run PHPUnit tests
         working-directory: ./back
-        run: |
-          ./vendor/bin/phpunit --testdox
+        run: bin/phpunit --testdox --configuration phpunit.xml
