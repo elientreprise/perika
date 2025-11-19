@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8125a841-15e0-465e-8749-b317f0072d3f" name="Changes" comment="fix phpunit config file">
       <change beforePath="$PROJECT_DIR$/.github/workflows/symfony.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/symfony.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -511,7 +510,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763563853001</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="fix phpunit config file">
+      <option name="closed" value="true" />
+      <created>1763564054901</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1763564054901</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
