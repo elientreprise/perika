@@ -27,7 +27,9 @@ jobs:
 
       - name: Fix permissions
         working-directory: ./back
-        run: chmod +x bin/console
+        run: |
+          chmod +x bin/console
+          chmod +x bin/phpunit
 
       - name: Create test database
         working-directory: ./back
@@ -35,8 +37,10 @@ jobs:
           cp .env.test .env
           bin/console doctrine:database:create --env=test --no-interaction || true
           bin/console doctrine:schema:create --env=test --no-interaction
+          bin/console doctrine:fixtures:load --env=test --no-interaction
+      
 
       - name: Run PHPUnit tests
         working-directory: ./back
         run: |
-          ./vendor/bin/phpunit --testdox
+          bin/phpunit --testdox
