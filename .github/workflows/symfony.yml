@@ -24,7 +24,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
         working-directory: ./back
-        
+
+      - name: Fix permissions
+        working-directory: ./back
+        run: chmod +x bin/console
+
       - name: Create test database
         working-directory: ./back
         run: |
