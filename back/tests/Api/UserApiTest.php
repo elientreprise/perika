@@ -21,6 +21,14 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
 
     public function testRegisterUser(): void
     {
+        $userRepository = self::getContainer()->get(UserRepository::class);
+        $user = $userRepository->findOneByEmail('test@example.com');
+        if ($user) {
+            $entityManager = self::getContainer()->get('doctrine')->getManager();
+            $entityManager->remove($user);
+            $entityManager->flush();
+        }
+
         $response = self::$client->request('POST', '/api/register', [
             'json' => [
                 'email' => 'test@example.com',
@@ -33,8 +41,8 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
             ],
         ]);
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['email' => 'test@example.com']);
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains(['email' => 'test@example.com']);
     }
 
     public function testLoginUser(): void
@@ -43,8 +51,8 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
             'json' => ['email' => 'test@example.com', 'password' => 'password123'],
         ]);
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains(
             [
                 'message' => 'Connexion réussie ✅',
                 'user' => [
@@ -61,8 +69,8 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
     {
         self::$client->request('GET', '/api/me');
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['email' => 'test@example.com']);
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains(['email' => 'test@example.com']);
     }
 
     public function testIsAuthenticated(): void
@@ -76,8 +84,8 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
 
         self::$client->request('GET', '/api/authenticated');
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
             'user' => [
                 'uuid' => $employee->getUuid()->toRfc4122(),
                 'email' => $employee->getEmail(),
@@ -100,8 +108,8 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
         $client = static::createClient();
         $client->request('GET', '/api/authenticated');
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['user' => null]);
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains(['user' => null]);
     }
 
     public function testProtectedRouteWithoutAuth(): void
@@ -110,6 +118,6 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
         $client = static::createClient();
         $client->request('GET', sprintf('/api/employees/%s', $uuid->toRfc4122()));
 
-        $this->assertResponseStatusCodeSame(401);
+        self::assertResponseStatusCodeSame(401);
     }
 }
