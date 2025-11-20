@@ -14,6 +14,10 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
+
+/**
+ * @todo faire test sur la modification d'un timesheet qui n'est pas le notre,
+ */
 class TimesheetApiTest extends ApiTestCase
 {
     private static Client $client;
@@ -36,42 +40,85 @@ class TimesheetApiTest extends ApiTestCase
             'start_period' => '',
             'end_period' => '',
             'comment' => '',
-            'project_times' => [
-                'sunday' => 0,
-                'monday' => 0,
-                'tuesday' => 0,
-                'wednesday' => 0,
-                'thursday' => 0,
-                'friday' => 0,
-                'saturday' => 0,
+            'days' => [
+                'sunday' => [
+                    'project_time' => 0,
+                    'is_min_daily_rest_met' => null,
+                    'is_work_shift_valid' => null,
+                    'worked_more_than_half_day' => null,
+                    'lunch_break' => null,
+                    'location' => null,
+                    'comment' => '',
+                ],
+                'monday' => [
+                    'project_time' => 7.40,
+                    'is_min_daily_rest_met' => true,
+                    'is_work_shift_valid' => true,
+                    'worked_more_than_half_day' => true,
+                    'lunch_break' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
+                    ],
+                    'comment' => '',
+                ],
+                'tuesday' => [
+                    'project_time' => 7.40,
+                    'is_min_daily_rest_met' => true,
+                    'is_work_shift_valid' => true,
+                    'worked_more_than_half_day' => true,
+                    'lunch_break' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
+                    ],
+                    'comment' => '',
+                ],
+                'wednesday' => [
+                    'project_time' => 7.40,
+                    'is_min_daily_rest_met' => true,
+                    'is_work_shift_valid' => true,
+                    'worked_more_than_half_day' => true,
+                    'lunch_break' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
+                    ],
+                    'comment' => '',
+                ],
+                'thursday' => [
+                    'project_time' => 7.40,
+                    'is_min_daily_rest_met' => true,
+                    'is_work_shift_valid' => true,
+                    'worked_more_than_half_day' => true,
+                    'lunch_break' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
+                    ],
+                    'comment' => '',
+                ],
+                'friday' => [
+                    'project_time' => 7.40,
+                    'is_min_daily_rest_met' => true,
+                    'is_work_shift_valid' => true,
+                    'worked_more_than_half_day' => true,
+                    'lunch_break' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
+                    ],
+                    'comment' => '',
+                ],
             ],
-            'rest' => [
-                'is_min_daily_rest_met' => [
-                    'sunday' => null, 'monday' => true, 'tuesday' => true,
-                    'wednesday' => true, 'thursday' => true, 'friday' => true, 'saturday' => null,
-                ],
-                'is_work_shift_valid' => [
-                    'sunday' => null, 'monday' => true, 'tuesday' => true,
-                    'wednesday' => true, 'thursday' => true, 'friday' => true, 'saturday' => null,
-                ],
-                'worked_more_than_half_day' => [
-                    'sunday' => null, 'monday' => true, 'tuesday' => true,
-                    'wednesday' => true, 'thursday' => true, 'friday' => true, 'saturday' => null,
-                ],
-                'lunch_break' => [
-                    'sunday' => null, 'monday' => 1, 'tuesday' => 1, 'wednesday' => 1,
-                    'thursday' => 1, 'friday' => 1, 'saturday' => null,
-                ],
+            'saturday' => [
+                'project_time' => 0,
+                'is_min_daily_rest_met' => null,
+                'is_work_shift_valid' => null,
+                'worked_more_than_half_day' => null,
+                'lunch_break' => null,
+                'location' => null,
                 'comment' => '',
-            ],
-            'location' => [
-                'sunday' => null,
-                'monday' => ['am' => '', 'pm' => ''],
-                'tuesday' => ['am' => '', 'pm' => ''],
-                'wednesday' => ['am' => '', 'pm' => ''],
-                'thursday' => ['am' => '', 'pm' => ''],
-                'friday' => ['am' => '', 'pm' => ''],
-                'saturday' => null,
             ],
         ];
 
@@ -90,23 +137,37 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheet(): void
     {
         $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => $this->defaultTimesheetPayload([
-                'project_times' => [
-                    'sunday' => 0,
-                    'monday' => 7.40,
-                    'tuesday' => 7.40,
-                    'wednesday' => 7.40,
-                    'thursday' => 7.40,
-                    'friday' => 7.40,
-                    'saturday' => 0,
-                ],
-            ]),
-        ]);
+            'json' => $this->defaultTimesheetPayload()]
+        );
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
             'message' => SuccessMessageEnum::TS_SUBMITTED,
             'prevent_editing' => true,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Créé une feuille de temps pour un employée qui n'est pas nous même ou notre subordonné
+     */
+    public function testCreateTimesheetNotAuthorized(): void
+    {
+        $response = self::$client->request('POST', '/api/timesheet', [
+                'json' => $this->defaultTimesheetPayload(['employee_id' => '',])]
+        );
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertJsonContains([
+            'error' => [
+                "message" => "Access Denied.",
+                "code" => 403
+            ]
         ]);
     }
 
@@ -124,14 +185,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'project_times' => [
-                        'sunday' => 0,
-                        'monday' => 0,
-                        'tuesday' => 7.40,
-                        'wednesday' => 7.40,
-                        'thursday' => 7.40,
-                        'friday' => 7.40,
-                        'saturday' => 0,
+                    'monday' => [
+                        'project_time' => 0,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -140,6 +204,11 @@ class TimesheetApiTest extends ApiTestCase
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
             'message' => ErrorMessageEnum::TS_NOT_ENOUGH_TOTAL_HOURS_->value,
+            'violations' => [
+                [
+                    'property_path' => 'monday.project_time',
+                ],
+            ],
             'prevent_editing' => false,
         ]);
     }
@@ -158,14 +227,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'project_times' => [
-                        'sunday' => 0,
-                        'monday' => 8.40,
-                        'tuesday' => 7.40,
-                        'wednesday' => 7.40,
-                        'thursday' => 7.40,
-                        'friday' => 7.40,
-                        'saturday' => 0,
+                    'monday' => [
+                        'project_time' => 8.40,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -174,6 +246,11 @@ class TimesheetApiTest extends ApiTestCase
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
             'message' => ErrorMessageEnum::TS_TOO_MUCH_TOTAL_HOURS_->value,
+            'violations' => [
+                [
+                    'property_path' => 'monday.project_time',
+                ],
+            ],
             'prevent_editing' => false,
         ]);
     }
@@ -192,14 +269,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'rest' => [
-                        'is_min_daily_rest_met' => [
-                            'monday' => null,
+                    'monday' => [
+                        'project_time' => 7.40,
+                        'is_min_daily_rest_met' => null,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
                         ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -210,7 +290,7 @@ class TimesheetApiTest extends ApiTestCase
             'message' => ErrorMessageEnum::TS_MINIMUM_DAILY_REST_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'rest.is_min_daily_rest_met.monday',
+                    'property_path' => 'monday.is_min_daily_rest_met',
                 ],
             ],
             'prevent_editing' => false,
@@ -231,14 +311,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'rest' => [
-                        'is_work_shift_valid' => [
-                            'monday' => null,
+                    'monday' => [
+                        'project_time' => 7.40,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => null,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
                         ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -249,7 +332,7 @@ class TimesheetApiTest extends ApiTestCase
             'message' => ErrorMessageEnum::TS_WORK_SHIFT_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'rest.is_work_shift_valid.monday',
+                    'property_path' => 'monday.is_work_shift_valid',
                 ],
             ],
             'prevent_editing' => false,
@@ -271,14 +354,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'rest' => [
-                        'worked_more_than_half_day' => [
-                            'monday' => null,
+                    'monday' => [
+                        'project_time' => 7.40,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => null,
+                        'lunch_break' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
                         ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -289,7 +375,7 @@ class TimesheetApiTest extends ApiTestCase
             'message' => ErrorMessageEnum::TS_WORKED_MORE_THAN_HALF_DAY_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'rest.worked_more_than_half_day.monday',
+                    'property_path' => 'monday.worked_more_than_half_day',
                 ],
             ],
             'prevent_editing' => false,
@@ -310,14 +396,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'rest' => [
-                        'lunch_break' => [
-                            'monday' => null,
+                    'monday' => [
+                        'project_time' => 7.40,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => null,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
                         ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -328,7 +417,7 @@ class TimesheetApiTest extends ApiTestCase
             'message' => ErrorMessageEnum::TS_LUNCH_BREAK_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'rest.lunch_break.monday',
+                    'property_path' => 'monday.lunch_break',
                 ],
             ],
             'prevent_editing' => false,
@@ -349,12 +438,14 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'location' => [
-                        'monday' => null,
+                    'monday' => [
+                        'project_time' => 7.40,
+                        'is_min_daily_rest_met' => true,
+                        'is_work_shift_valid' => true,
+                        'worked_more_than_half_day' => true,
+                        'lunch_break' => 1,
+                        'location' => null,
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -386,12 +477,17 @@ class TimesheetApiTest extends ApiTestCase
         $response = self::$client->request('POST', '/api/timesheet', [
             'json' => [
                 $this->defaultTimesheetPayload([
-                    'employee_id' => '',
-                    'project_id' => '',
-                    'start_period' => '',
-                    'end_period' => '',
-                    'location' => [
-                        'sunday' => ['am' => '', 'pm' => ''],
+                    'sunday' => [
+                        'project_time' => 0,
+                        'is_min_daily_rest_met' => null,
+                        'is_work_shift_valid' => null,
+                        'worked_more_than_half_day' => null,
+                        'lunch_break' => null,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
                     ],
                 ]),
             ],
@@ -402,10 +498,10 @@ class TimesheetApiTest extends ApiTestCase
             'message' => ErrorMessageEnum::TS_LOCATION_UNEXPECTED_VALUE->value,
             'violations' => [
                 [
-                    'property_path' => 'location.sunday.am',
+                    'property_path' => 'sunday.location.am',
                 ],
                 [
-                    'property_path' => 'location.sunday.pm',
+                    'property_path' => 'sunday.location.pm',
                 ],
             ],
             'prevent_editing' => false,
