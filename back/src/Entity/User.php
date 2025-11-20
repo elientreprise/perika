@@ -140,7 +140,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Assert\NotBlank(message: 'The hire date are required', groups: ['edit'])]
     #[Groups(['employee:read', 'edit'])]
-    private ?\DateTimeImmutable $hire_date = null;
+    private ?\DateTimeImmutable $hireDate = null;
 
     #[ORM\Column]
     #[Groups(['employee:read'])]
@@ -174,11 +174,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['link-employee:write'])]
     public array $employeeUuids = [];
 
+    /**
+     * @var Collection<int, Timesheet>
+     */
+    #[ORM\OneToMany(targetEntity: Timesheet::class, mappedBy: 'employee')]
+    private Collection $timesheets;
+
     public function __construct()
     {
         $this->uuid = Uuid::v4();
         $this->isActive = true;
         $this->subordinates = new ArrayCollection();
+        $this->timesheets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -293,12 +300,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getHireDate(): ?\DateTimeImmutable
     {
-        return $this->hire_date;
+        return $this->hireDate;
     }
 
-    public function setHireDate(?\DateTimeImmutable $hire_date): static
+    public function setHireDate(?\DateTimeImmutable $hireDate): static
     {
-        $this->hire_date = $hire_date;
+        $this->hireDate = $hireDate;
 
         return $this;
     }
@@ -402,5 +409,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $interval = date_diff($this->hire_date, $now);
 
         return $interval->format('%y years %m months %d days');
+    }
+
+    /**
+     * @return Collection<int, Timesheet>
+     */
+    public function getTimesheets(): Collection
+    {
+        return $this->timesheets;
+    }
+
+    public function addTimesheet(Timesheet $timesheet): static
+    {
+        if (!$this->timesheets->contains($timesheet)) {
+            $this->timesheets->add($timesheet);
+            $timesheet->setEmployee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTimesheet(Timesheet $timesheet): static
+    {
+        // set the owning side to null (unless already changed)
+        if ($this->timesheets->removeElement($timesheet) && $timesheet->getEmployee() === $this) {
+            $timesheet->setEmployee(null);
+        }
+
+        return $this;
     }
 }
