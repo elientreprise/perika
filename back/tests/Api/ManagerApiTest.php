@@ -20,10 +20,10 @@ class ManagerApiTest extends ApiTestCase implements LoggedApiTestInterface
     public function testLoginUser(): void
     {
         self::$client->request('POST', '/api/login', [
-            'json' => ['email' => 'manager@example.com', 'password' => 'password123'],
+            'json' => ['email' => 'manager@example.com', 'password' => 'test'],
         ]);
 
-        $this->assertJsonContains(
+        self::assertJsonContains(
             [
                 'message' => 'Connexion réussie ✅',
                 'user' => [
@@ -35,7 +35,7 @@ class ManagerApiTest extends ApiTestCase implements LoggedApiTestInterface
             ]
         );
 
-        $this->assertResponseIsSuccessful();
+        self::assertResponseIsSuccessful();
     }
 
     public function testLinkEmployee(): void
@@ -60,8 +60,8 @@ class ManagerApiTest extends ApiTestCase implements LoggedApiTestInterface
             ]
         );
 
-        $this->assertResponseIsSuccessful();
-        $this->assertJsonContains([
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
             'message' => '0 ajoutés, 2 introuvables, 0 déjà reliés.',
             'refreshManagerData' => false,
         ]);

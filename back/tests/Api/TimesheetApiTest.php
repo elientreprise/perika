@@ -1,109 +1,125 @@
 <?php
 
-namespace Api;
+namespace App\Tests\Api;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
+use App\Entity\User;
+use App\Enum\Entity\WeekDayEnum;
 use App\Enum\ResponseMessage\ErrorMessageEnum;
 use App\Enum\ResponseMessage\SuccessMessageEnum;
-use App\Repository\UserRepository;
+use App\Factory\TimesheetFactory;
+use App\Factory\UserFactory;
+use App\Story\DefaultUseCaseStory;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Zenstruck\Foundry\Test\Factories;
+use Zenstruck\Foundry\Test\ResetDatabase;
 
-
-/**
- * @todo faire test sur la modification d'un timesheet qui n'est pas le notre,
- */
 class TimesheetApiTest extends ApiTestCase
 {
+    use Factories;
+    use ResetDatabase;
+
     private static Client $client;
     private static UserInterface $user;
 
-    public static function setUpBeforeClass(): void
+    protected function setUp(): void
     {
-        self::$client = static::createClient(['cookie' => true]);
-        $userRepository = self::getContainer()->get(UserRepository::class);
-        self::$user = $userRepository->findOneBy(['email' => 'user@example.com']);
-        self::$client->loginUser(self::$user);
-        static::$alwaysBootKernel = true;
+        self::$alwaysBootKernel = true;
+        parent::setUp();
+        DefaultUseCaseStory::load();
+
+        static::$client = static::createClient([], [
+            'headers' => ['Content-Type' => 'application/ld+json'],
+        ]);
+
+        self::$user = UserFactory::find(['email' => 'employee@example.com']);
+        static::$client->loginUser(self::$user);
     }
 
     private function defaultTimesheetPayload(array $overrides = []): array
     {
+        $employeeIri = $this->findIriBy(User::class, ['email' => self::$user->getEmail()]);
+
         $payload = [
-            'employee_id' => '',
-            'project_id' => '',
-            'start_period' => '',
-            'end_period' => '',
+            'employee' => $employeeIri,
+            'endPeriod' => (new \DateTimeImmutable())->format('Y-m-d'),
             'comment' => '',
-            'days' => [
-                'sunday' => [
-                    'project_time' => 0,
-                    'is_min_daily_rest_met' => null,
-                    'is_work_shift_valid' => null,
-                    'worked_more_than_half_day' => null,
-                    'lunch_break' => null,
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => null,
                     'location' => null,
                     'comment' => '',
                 ],
-                'monday' => [
-                    'project_time' => 7.40,
-                    'is_min_daily_rest_met' => true,
-                    'is_work_shift_valid' => true,
-                    'worked_more_than_half_day' => true,
-                    'lunch_break' => 1,
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
                     'location' => [
                         'am' => '',
                         'pm' => '',
                     ],
                     'comment' => '',
                 ],
-                'tuesday' => [
-                    'project_time' => 7.40,
-                    'is_min_daily_rest_met' => true,
-                    'is_work_shift_valid' => true,
-                    'worked_more_than_half_day' => true,
-                    'lunch_break' => 1,
+                WeekDayEnum::Tuesday->value => [
+                    'day' => WeekDayEnum::Tuesday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
                     'location' => [
                         'am' => '',
                         'pm' => '',
                     ],
                     'comment' => '',
                 ],
-                'wednesday' => [
-                    'project_time' => 7.40,
-                    'is_min_daily_rest_met' => true,
-                    'is_work_shift_valid' => true,
-                    'worked_more_than_half_day' => true,
-                    'lunch_break' => 1,
+                WeekDayEnum::Wednesday->value => [
+                    'day' => WeekDayEnum::Wednesday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
                     'location' => [
                         'am' => '',
                         'pm' => '',
                     ],
                     'comment' => '',
                 ],
-                'thursday' => [
-                    'project_time' => 7.40,
-                    'is_min_daily_rest_met' => true,
-                    'is_work_shift_valid' => true,
-                    'worked_more_than_half_day' => true,
-                    'lunch_break' => 1,
+                WeekDayEnum::Thursday->value => [
+                    'day' => WeekDayEnum::Thursday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
                     'location' => [
                         'am' => '',
                         'pm' => '',
                     ],
                     'comment' => '',
                 ],
-                'friday' => [
-                    'project_time' => 7.40,
-                    'is_min_daily_rest_met' => true,
-                    'is_work_shift_valid' => true,
-                    'worked_more_than_half_day' => true,
-                    'lunch_break' => 1,
+                WeekDayEnum::Friday->value => [
+                    'day' => WeekDayEnum::Friday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
                     'location' => [
                         'am' => '',
                         'pm' => '',
@@ -111,18 +127,19 @@ class TimesheetApiTest extends ApiTestCase
                     'comment' => '',
                 ],
             ],
-            'saturday' => [
-                'project_time' => 0,
-                'is_min_daily_rest_met' => null,
-                'is_work_shift_valid' => null,
-                'worked_more_than_half_day' => null,
-                'lunch_break' => null,
+            WeekDayEnum::Saturday->value => [
+                'day' => WeekDayEnum::Saturday->value,
+                'projectTime' => 0,
+                'isMinDailyRestMet' => null,
+                'isWorkShiftValid' => null,
+                'workedMoreThanHalfDay' => null,
+                'lunchBreak' => null,
                 'location' => null,
                 'comment' => '',
             ],
         ];
 
-        return array_merge_recursive($payload, $overrides);
+        return array_replace_recursive($payload, $overrides);
     }
 
     /**
@@ -136,14 +153,17 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheet(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => $this->defaultTimesheetPayload()]
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2025-11-21',
+            ]),
+        ]
         );
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
-            'message' => SuccessMessageEnum::TS_SUBMITTED,
-            'prevent_editing' => true,
+            'message' => SuccessMessageEnum::TS_SUBMITTED->value,
+            'preventEditing' => true,
         ]);
     }
 
@@ -154,20 +174,102 @@ class TimesheetApiTest extends ApiTestCase
      * @throws ServerExceptionInterface
      * @throws TransportExceptionInterface
      *
-     * Créé une feuille de temps pour un employée qui n'est pas nous même ou notre subordonné
+     * Check si une feuille de temps est déjà créée à la période donnée
+     */
+    public function testCheckTimesheetExist(): void
+    {
+        $timesheet = TimesheetFactory::new([
+            'employee' => self::$user,
+        ])->withWorkDays()->create();
+
+        $employeeIri = $this->findIriBy(User::class, ['email' => $timesheet->getEmployee()->getEmail()]);
+
+        $response = self::$client->request('POST', '/api/timesheets/check-exists', [
+            'json' => [
+                'date' => (new \DateTimeImmutable())->format('Y-m-d'),
+                'employee' => $employeeIri,
+            ]]
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
+            'exists' => true,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Créé une feuille de temps avec toutes les informations valides pour un subordonné
+     */
+    public function testCreateTimesheetForSubordinate(): void
+    {
+        $employee = UserFactory::createOne([
+            'manager' => self::$user,
+        ]);
+        $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
+
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
+        );
+
+        self::assertResponseIsSuccessful();
+        self::assertJsonContains([
+            'message' => SuccessMessageEnum::TS_SUBMITTED->value,
+            'preventEditing' => true,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Créé une feuille de temps avec toutes les informations valides pour un employée qui n'hésiste pas
+     */
+    public function testCreateTimesheetForUndefinedEmployee(): void
+    {
+        $employee = UserFactory::createOne();
+        $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
+        UserFactory::truncate();
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
+        );
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertJsonContains([
+            'description' => "Item not found for \"$employeeIri\".",
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Impossible de créer une feuille de temps pour un employée qui n'est pas nous même ou notre subordonné
      */
     public function testCreateTimesheetNotAuthorized(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-                'json' => $this->defaultTimesheetPayload(['employee_id' => '',])]
+        $employee = UserFactory::createOne();
+        $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
+
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
         );
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
-            'error' => [
-                "message" => "Access Denied.",
-                "code" => 403
-            ]
+            'detail' => ErrorMessageEnum::TS_CREATION_NOT_AUTHORIZED->value,
+            'status' => 403,
         ]);
     }
 
@@ -182,34 +284,35 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetNotEnoughTotalHours(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 0,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => 1,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => 1,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_NOT_ENOUGH_TOTAL_HOURS_->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.project_time',
+                    'propertyPath' => 'workDays',
+                    'message' => ErrorMessageEnum::TS_NOT_ENOUGH_TOTAL_HOURS->value,
                 ],
             ],
-            'prevent_editing' => false,
         ]);
     }
 
@@ -224,34 +327,35 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetTooMuchTotalHours(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 8.40,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => 1,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 8.40,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => 1,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_TOO_MUCH_TOTAL_HOURS_->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.project_time',
+                    'propertyPath' => 'workDays',
+                    'message' => ErrorMessageEnum::TS_TOO_MUCH_TOTAL_HOURS->value,
                 ],
             ],
-            'prevent_editing' => false,
         ]);
     }
 
@@ -264,36 +368,80 @@ class TimesheetApiTest extends ApiTestCase
      *
      * Le jour du lundi est travaillé mais le champ du temps de repos minimum pour le même jour n'est pas rempli
      */
-    public function testCreateTimesheetMinimumRestIncoherent(): void
+    public function testCreateTimesheetMinimumRestIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 7.40,
-                        'is_min_daily_rest_met' => null,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => 1,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 7.40,
+                        'isMinDailyRestMet' => null,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => 1,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_MINIMUM_DAILY_REST_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.is_min_daily_rest_met',
+                    'message' => ErrorMessageEnum::TS_MINIMUM_DAILY_REST_MISSING->value,
+                    'propertyPath' => 'workDays[1].isMinDailyRestMet',
                 ],
             ],
-            'prevent_editing' => false,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Le jour du Dimanche n'est pas travaillé mais le champ du temps de repos minimum pour le même jour est rempli
+     */
+    public function testCreateTimesheetMinimumRestIncoherentWithNotWorkedDay(): void
+    {
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Sunday->value => [
+                        'day' => WeekDayEnum::Sunday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => null,
+                        'workedMoreThanHalfDay' => null,
+                        'lunchBreak' => null,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
+                    ],
+                ],
+            ]),
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertJsonContains([
+            'violations' => [
+                [
+                    'message' => ErrorMessageEnum::TS_MINIMUM_DAILY_REST_UNEXPECTED_VALUE->value,
+                    'propertyPath' => 'workDays[0].isMinDailyRestMet',
+                ],
+            ],
         ]);
     }
 
@@ -306,36 +454,80 @@ class TimesheetApiTest extends ApiTestCase
      *
      * Le jour du lundi est travaillé mais le champ pour le début et la fin du temps de travail pour le même jour n'est pas rempli
      */
-    public function testCreateTimesheetWorkShiftIncoherent(): void
+    public function testCreateTimesheetWorkShiftIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 7.40,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => null,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => 1,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 7.40,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => null,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => 1,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_WORK_SHIFT_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.is_work_shift_valid',
+                    'message' => ErrorMessageEnum::TS_WORK_SHIFT_MISSING->value,
+                    'propertyPath' => 'workDays[1].isWorkShiftValid',
                 ],
             ],
-            'prevent_editing' => false,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Le jour du Dimanche n'est pas travaillé mais le champ pour le début et la fin du temps de travail pour le même jour est rempli
+     */
+    public function testCreateTimesheetWorkShiftIncoherentWithNotWorkedDay(): void
+    {
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Sunday->value => [
+                        'day' => WeekDayEnum::Sunday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => null,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => null,
+                        'lunchBreak' => null,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
+                    ],
+                ],
+            ]),
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertJsonContains([
+            'violations' => [
+                [
+                    'message' => ErrorMessageEnum::TS_WORK_SHIFT_UNEXPECTED_VALUE->value,
+                    'propertyPath' => 'workDays[0].isWorkShiftValid',
+                ],
+            ],
         ]);
     }
 
@@ -349,36 +541,81 @@ class TimesheetApiTest extends ApiTestCase
      * Le jour du lundi est travaillé mais le champ pour indiquer un travail supérieur à une demi journée
      * pour le même jour n'est pas rempli
      */
-    public function testCreateTimesheetWorkedMoreThanHalfDayIncoherent(): void
+    public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 7.40,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => null,
-                        'lunch_break' => 1,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 7.40,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => null,
+                        'lunchBreak' => 1,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_WORKED_MORE_THAN_HALF_DAY_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.worked_more_than_half_day',
+                    'message' => ErrorMessageEnum::TS_WORKED_MORE_THAN_HALF_DAY_MISSING->value,
+                    'propertyPath' => 'workDays[1].workedMoreThanHalfDay',
                 ],
             ],
-            'prevent_editing' => false,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Le jour du Dimanche n'est pas travaillé mais le champ pour indiquer un travail supérieur à une demi journée
+     * pour le même jour est rempli
+     */
+    public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithNotWorkedDay(): void
+    {
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Sunday->value => [
+                        'day' => WeekDayEnum::Sunday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => null,
+                        'isWorkShiftValid' => null,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => null,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
+                    ],
+                ],
+            ]),
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertJsonContains([
+            'violations' => [
+                [
+                    'message' => ErrorMessageEnum::TS_WORKED_MORE_THAN_HALF_DAY_UNEXPECTED_VALUE->value,
+                    'propertyPath' => 'workDays[0].workedMoreThanHalfDay',
+                ],
+            ],
         ]);
     }
 
@@ -391,36 +628,80 @@ class TimesheetApiTest extends ApiTestCase
      *
      * Le jour du lundi est travaillé mais le champ pour indiquer la pose du midi pour le même jour n'est pas rempli
      */
-    public function testCreateTimesheetLunchBreakIncoherent(): void
+    public function testCreateTimesheetLunchBreakIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 7.40,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => null,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 7.40,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => null,
                         'location' => [
                             'am' => '',
                             'pm' => '',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_LUNCH_BREAK_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'monday.lunch_break',
+                    'message' => ErrorMessageEnum::TS_LUNCH_BREAK_MISSING->value,
+                    'propertyPath' => 'workDays[1].lunchBreak',
                 ],
             ],
-            'prevent_editing' => false,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Le jour du dimanche n'est pas travaillé mais le champ pour indiquer la pose du midi pour le même jour est rempli
+     */
+    public function testCreateTimesheetLunchBreakIncoherentWithNotWorkedDay(): void
+    {
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Sunday->value => [
+                        'day' => WeekDayEnum::Sunday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => null,
+                        'isWorkShiftValid' => null,
+                        'workedMoreThanHalfDay' => null,
+                        'lunchBreak' => 1,
+                        'location' => [
+                            'am' => '',
+                            'pm' => '',
+                        ],
+                        'comment' => '',
+                    ],
+                ],
+            ]),
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertJsonContains([
+            'violations' => [
+                [
+                    'message' => ErrorMessageEnum::TS_LUNCH_BREAK_UNEXPECTED_VALUE->value,
+                    'propertyPath' => 'workDays[0].lunchBreak',
+                ],
+            ],
         ]);
     }
 
@@ -433,33 +714,41 @@ class TimesheetApiTest extends ApiTestCase
      *
      * Le jour du lundi est travaillé mais le champ pour indiquer localisation du même jour n'est pas rempli
      */
-    public function testCreateTimesheetLocationIncoherent(): void
+    public function testCreateTimesheetLocationIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'monday' => [
-                        'project_time' => 7.40,
-                        'is_min_daily_rest_met' => true,
-                        'is_work_shift_valid' => true,
-                        'worked_more_than_half_day' => true,
-                        'lunch_break' => 1,
-                        'location' => null,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Monday->value => [
+                        'day' => WeekDayEnum::Monday->value,
+                        'projectTime' => 7.40,
+                        'isMinDailyRestMet' => true,
+                        'isWorkShiftValid' => true,
+                        'workedMoreThanHalfDay' => true,
+                        'lunchBreak' => 1,
+                        'location' => [
+                            'am' => null,
+                            'pm' => null,
+                        ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_LOCATION_MISSING->value,
             'violations' => [
                 [
-                    'property_path' => 'location.monday',
+                    'propertyPath' => 'workDays[1].location.am',
+                    'message' => ErrorMessageEnum::TS_LOCATION_MISSING->value,
+                ],
+                [
+                    'propertyPath' => 'workDays[1].location.pm',
+                    'message' => ErrorMessageEnum::TS_LOCATION_MISSING->value,
                 ],
             ],
-            'prevent_editing' => false,
         ]);
     }
 
@@ -474,37 +763,39 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLocationIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheet', [
-            'json' => [
-                $this->defaultTimesheetPayload([
-                    'sunday' => [
-                        'project_time' => 0,
-                        'is_min_daily_rest_met' => null,
-                        'is_work_shift_valid' => null,
-                        'worked_more_than_half_day' => null,
-                        'lunch_break' => null,
+        $response = self::$client->request('POST', '/api/timesheets', [
+            'json' => $this->defaultTimesheetPayload([
+                'endPeriod' => '2024-11-30',
+                'workDays' => [
+                    WeekDayEnum::Sunday->value => [
+                        'day' => WeekDayEnum::Sunday->value,
+                        'projectTime' => 0,
+                        'isMinDailyRestMet' => null,
+                        'isWorkShiftValid' => null,
+                        'workedMoreThanHalfDay' => null,
+                        'lunchBreak' => 0,
                         'location' => [
-                            'am' => '',
-                            'pm' => '',
+                            'am' => 'test',
+                            'pm' => 'test',
                         ],
                         'comment' => '',
                     ],
-                ]),
-            ],
+                ],
+            ]),
         ]);
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
-            'message' => ErrorMessageEnum::TS_LOCATION_UNEXPECTED_VALUE->value,
             'violations' => [
                 [
-                    'property_path' => 'sunday.location.am',
+                    'propertyPath' => 'workDays[0].location.am',
+                    'message' => ErrorMessageEnum::TS_LOCATION_UNEXPECTED_VALUE->value,
                 ],
                 [
-                    'property_path' => 'sunday.location.pm',
+                    'propertyPath' => 'workDays[0].location.pm',
+                    'message' => ErrorMessageEnum::TS_LOCATION_UNEXPECTED_VALUE->value,
                 ],
             ],
-            'prevent_editing' => false,
         ]);
     }
 }

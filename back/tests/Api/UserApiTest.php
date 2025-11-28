@@ -93,7 +93,7 @@ class UserApiTest extends ApiTestCase implements LoggedApiTestInterface
                 'lastName' => $employee->getLastName(),
                 'position' => $employee->getPosition(),
                 'salary' => $employee->getSalary(),
-                'hire_date' => $employee->getHireDate(),
+                'hireDate' => $employee->getHireDate(),
                 'phoneNumber' => $employee->getPhoneNumber(),
                 'birthDate' => $employee->getBirthDate(),
                 'manager' => $employee->getManager(),
