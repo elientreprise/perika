@@ -142,6 +142,13 @@ class TimesheetApiTest extends ApiTestCase
         return array_replace_recursive($payload, $overrides);
     }
 
+    private function postTimesheet(array $payload)
+    {
+        return self::$client->request('POST', '/api/timesheets', [
+            'json' => $payload,
+        ]);
+    }
+
     /**
      * @throws ClientExceptionInterface
      * @throws DecodingExceptionInterface
@@ -153,12 +160,10 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheet(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2025-11-21',
-            ]),
-        ]
-        );
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2025-11-21',
+        ]));
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
@@ -213,9 +218,7 @@ class TimesheetApiTest extends ApiTestCase
         ]);
         $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
 
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
-        );
+        $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
@@ -238,9 +241,9 @@ class TimesheetApiTest extends ApiTestCase
         $employee = UserFactory::createOne();
         $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
         UserFactory::truncate();
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
-        );
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
+
 
         self::assertResponseStatusCodeSame(400);
         self::assertJsonContains([
@@ -262,9 +265,8 @@ class TimesheetApiTest extends ApiTestCase
         $employee = UserFactory::createOne();
         $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
 
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload(['employee' => $employeeIri])]
-        );
+        $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
+
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -284,26 +286,24 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetNotEnoughTotalHours(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -327,26 +327,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetTooMuchTotalHours(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 8.40,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 8.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -370,26 +369,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetMinimumRestIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 7.40,
-                        'isMinDailyRestMet' => null,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -413,26 +411,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetMinimumRestIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Sunday->value => [
-                        'day' => WeekDayEnum::Sunday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => null,
-                        'workedMoreThanHalfDay' => null,
-                        'lunchBreak' => null,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => null,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -456,26 +453,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkShiftIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 7.40,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => null,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -499,26 +495,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkShiftIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Sunday->value => [
-                        'day' => WeekDayEnum::Sunday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => null,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => null,
-                        'lunchBreak' => null,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => null,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -543,26 +538,24 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 7.40,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => null,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -587,26 +580,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Sunday->value => [
-                        'day' => WeekDayEnum::Sunday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => null,
-                        'isWorkShiftValid' => null,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => null,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => null,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -630,26 +622,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLunchBreakIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 7.40,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => null,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => null,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -673,26 +664,24 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLunchBreakIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Sunday->value => [
-                        'day' => WeekDayEnum::Sunday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => null,
-                        'isWorkShiftValid' => null,
-                        'workedMoreThanHalfDay' => null,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => '',
-                            'pm' => '',
-                        ],
-                        'comment' => '',
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => '',
+                        'pm' => '',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -716,26 +705,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLocationIncoherentWithWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Monday->value => [
-                        'day' => WeekDayEnum::Monday->value,
-                        'projectTime' => 7.40,
-                        'isMinDailyRestMet' => true,
-                        'isWorkShiftValid' => true,
-                        'workedMoreThanHalfDay' => true,
-                        'lunchBreak' => 1,
-                        'location' => [
-                            'am' => null,
-                            'pm' => null,
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Monday->value => [
+                    'day' => WeekDayEnum::Monday->value,
+                    'projectTime' => 7.40,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => [
+                        'am' => null,
+                        'pm' => null,
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
@@ -763,26 +751,25 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLocationIncoherentWithNotWorkedDay(): void
     {
-        $response = self::$client->request('POST', '/api/timesheets', [
-            'json' => $this->defaultTimesheetPayload([
-                'endPeriod' => '2024-11-30',
-                'workDays' => [
-                    WeekDayEnum::Sunday->value => [
-                        'day' => WeekDayEnum::Sunday->value,
-                        'projectTime' => 0,
-                        'isMinDailyRestMet' => null,
-                        'isWorkShiftValid' => null,
-                        'workedMoreThanHalfDay' => null,
-                        'lunchBreak' => 0,
-                        'location' => [
-                            'am' => 'test',
-                            'pm' => 'test',
-                        ],
-                        'comment' => '',
+
+        $response = $this->postTimesheet($this->defaultTimesheetPayload([
+            'endPeriod' => '2024-11-30',
+            'workDays' => [
+                WeekDayEnum::Sunday->value => [
+                    'day' => WeekDayEnum::Sunday->value,
+                    'projectTime' => 0,
+                    'isMinDailyRestMet' => null,
+                    'isWorkShiftValid' => null,
+                    'workedMoreThanHalfDay' => null,
+                    'lunchBreak' => 0,
+                    'location' => [
+                        'am' => 'test',
+                        'pm' => 'test',
                     ],
+                    'comment' => '',
                 ],
-            ]),
-        ]);
+            ],
+        ]));
 
         self::assertResponseStatusCodeSame(422);
         self::assertJsonContains([
