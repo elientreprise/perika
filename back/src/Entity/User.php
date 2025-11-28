@@ -11,11 +11,12 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\CheckAuthAction;
 use App\Dto\Response\LinkEmployeeResponse;
+use App\Enum\Entity\CoreUserRoleEnum;
 use App\Enum\PermissionEnum;
 use App\Repository\UserRepository;
-use App\State\LinkEmployeeProcessor;
-use App\State\MeProvider;
+use App\State\Processor\LinkEmployeeProcessor;
 use App\State\Processor\UserProcessor;
+use App\State\Provider\MeProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -92,6 +93,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    // todo remplacer par une propriété dans l'entité contract
+    public const float MAX_TOTAL_TIME_PROJECT = 37;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', unique: true)]
@@ -395,20 +399,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['employee:read'])]
     /**
      * @return string
-     *                Return seniority calculated between hire_date and now
+     *                Return seniority calculated between hireDate and now
      *                format on "%y years %m months %d days"
      */
     public function getSeniority(): string
     {
         $now = new \DateTimeImmutable('now');
 
-        if (!$this->hire_date) {
+        if (!$this->hireDate) {
             return 0;
         }
 
-        $interval = date_diff($this->hire_date, $now);
-
-        return $interval->format('%y years %m months %d days');
+        return date_diff($this->hireDate, $now)->format('%y years %m months %d days');
     }
 
     /**
@@ -437,5 +439,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->roles, true);
+    }
+
+    public function isManager(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::MANAGER->value);
+    }
+
+    public function isRh(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::RH->value);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::ADMIN->value);
     }
 }

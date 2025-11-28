@@ -9,8 +9,8 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @method TimesheetWorkDay|null find($id, $lockMode = null, $lockVersion = null)
  * @method TimesheetWorkDay|null findOneBy(array $criteria, array $orderBy = null)
- * @method TimesheetWorkDay[] findAll()
- * @method TimesheetWorkDay[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method TimesheetWorkDay[]    findAll()
+ * @method TimesheetWorkDay[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class TimesheetWorkDayRepository extends ServiceEntityRepository
 {

@@ -5,47 +5,60 @@ namespace App\Entity;
 use App\Entity\ValueObject\Location;
 use App\Enum\Entity\WeekDayEnum;
 use App\Repository\TimesheetWorkDayRepository;
+use App\Validator\ValidWorkdays;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TimesheetWorkDayRepository::class)]
+#[ValidWorkdays]
 class TimesheetWorkDay
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private int $id;
 
-    #[ORM\ManyToOne(inversedBy: 'workDays')]
+    #[ORM\ManyToOne(inversedBy: 'workDays', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank()]
     private Timesheet $timesheet;
 
     #[ORM\Column(enumType: WeekDayEnum::class)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    #[Assert\NotBlank()]
     private WeekDayEnum $day;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $projectTime = null;
+    #[ORM\Column(options: ['default' => 0])]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    private float $projectTime = 0;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
     private ?bool $isMinDailyRestMet = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
     private ?bool $isWorkShiftValid = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
     private ?bool $workedMoreThanHalfDay = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
     private ?int $lunchBreak = null;
 
     #[ORM\Embedded(class: Location::class)]
-    private ?Location $location = null;
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    private ?Location $location;
 
     public function __construct()
     {
         $this->location = new Location();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -74,14 +87,14 @@ class TimesheetWorkDay
         return $this;
     }
 
-    public function getProjectTime(): ?int
+    public function getProjectTime(): ?float
     {
         return $this->projectTime;
     }
 
-    public function setProjectTime(?int $projectTime): self
+    public function setProjectTime(float $value): self
     {
-        $this->projectTime = $projectTime;
+        $this->projectTime = $value;
 
         return $this;
     }
@@ -144,5 +157,15 @@ class TimesheetWorkDay
         $this->location = $location;
 
         return $this;
+    }
+
+    public function isProjectTimeOverZero(): bool
+    {
+        return $this->projectTime > 0.0;
+    }
+
+    public function isZeroHourProjectTime(): bool
+    {
+        return 0.0 === $this->projectTime;
     }
 }

@@ -2,13 +2,15 @@
 
 namespace App\Security;
 
+use App\Entity\Timesheet;
 use App\Entity\User;
 use App\Enum\PermissionEnum;
+use App\Enum\ResponseMessage\ErrorMessageEnum;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class EmployeeVoter extends Voter
+class TimesheetVoter extends Voter
 {
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -16,7 +18,7 @@ class EmployeeVoter extends Voter
             return false;
         }
 
-        if (!$subject instanceof User) {
+        if (!$subject instanceof Timesheet) {
             return false;
         }
 
@@ -31,37 +33,21 @@ class EmployeeVoter extends Voter
             return false;
         }
 
-        /** @var User $employee */
-        $employee = $subject;
+        /** @var Timesheet $timesheet */
+        $timesheet = $subject;
 
         return match ($attribute) {
-            PermissionEnum::CAN_EDIT_EMPLOYEE->value => $this->canEdit($employee, $user, $vote),
-            PermissionEnum::CAN_VIEW_EMPLOYEE->value => $this->canView($employee, $user, $vote),
-            PermissionEnum::CAN_ADD_SUBORDINATES->value => $this->canAddSubordinate($employee, $user, $vote),
+            PermissionEnum::CAN_CREATE_TIMESHEET->value => $this->canCreate($timesheet, $user, $vote),
+            PermissionEnum::CAN_VIEW_TIMESHEET->value => $this->canView($timesheet, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
 
-    private function canEdit(User $employee, User $user, ?Vote $vote): bool
+    private function canCreate(Timesheet $timesheet, User $user, ?Vote $vote): bool
     {
-        if (
-            !$this->canView($employee, $user, $vote)
-        ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function canView(User $employee, User $user, ?Vote $vote): bool
-    {
-        if (
-            !$user->isRh()
-            && !$user->isManager()
-            && !$user->getSubordinates()->contains($employee)
-        ) {
+        if (!$timesheet->isOwner($user) && !$user->getSubordinates()->contains($timesheet->getEmployee())) {
             $vote?->addReason(sprintf(
-                'The logged in user (username: %s) can\'t access to this resource. Only HR, Manager or user him self can do this.',
+                ErrorMessageEnum::TS_CREATION_NOT_AUTHORIZED->value,
                 $user->getUserIdentifier()
             ));
 
@@ -71,9 +57,22 @@ class EmployeeVoter extends Voter
         return true;
     }
 
-    private function canAddSubordinate(User $employee, User $user, ?Vote $vote): bool
+    private function canView(Timesheet $timesheet, User $user, ?Vote $vote): bool
     {
-        // todo ajouter la logique
+        if (
+            !$user->isRh()
+            && !$user->isManager()
+            && !$user->getSubordinates()->contains($timesheet->getEmployee())
+            && !$timesheet->isOwner($user)
+        ) {
+            $vote?->addReason(sprintf(
+                'The logged in user (username: %s) can\'t access to this resource. Only HR, Manager or user him self can do this.',
+                $user->getUserIdentifier()
+            ));
+
+            return false;
+        }
+
         return true;
     }
 }

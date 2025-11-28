@@ -2,39 +2,112 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use App\Dto\Input\CalculatePeriodInput;
+use App\Dto\Input\CheckTimesheetInput;
+use App\Dto\Response\Timesheet\CheckTimesheetResponse;
+use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
 use App\Repository\TimesheetRepository;
+use App\State\Processor\CheckTimesheetExistsProcessor;
+use App\State\Processor\TimesheetCalculatePeriodProcessor;
+use App\State\Processor\TimesheetProcessor;
+use App\Validator\NoTimesheetOverlap;
+use App\Validator\ValidStartEndDate;
+use App\Validator\ValidTimesheet;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TimesheetRepository::class)]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/timesheets',
+            normalizationContext: ['groups' => ['timesheet:read']],
+            denormalizationContext: ['groups' => ['timesheet:write']],
+            validationContext: ['groups' => ['Default', 'create']],
+            output: false,
+            processor: TimesheetProcessor::class
+        ),
+        new Post(
+            uriTemplate: '/timesheets/check-exists',
+            normalizationContext: ['groups' => ['timesheet:read']],
+            denormalizationContext: ['groups' => ['timesheet:check-exists']],
+            input: CheckTimesheetInput::class,
+            output: CheckTimesheetResponse::class,
+            processor: CheckTimesheetExistsProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/timesheets/calculate-period',
+            normalizationContext: ['groups' => ['timesheet:read']],
+            denormalizationContext: ['groups' => ['timesheet:calculate-period']],
+            input: CalculatePeriodInput::class,
+            output: TimesheetCalculatePeriodResponse::class,
+            processor: TimesheetCalculatePeriodProcessor::class
+        ),
+        new Get(
+            uriTemplate: '/timesheets/{uuid}',
+            normalizationContext: ['groups' => ['timesheet:read']],
+        ),
+    ],
+    normalizationContext: ['groups' => ['timesheet:read']],
+    denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
+    validationContext: ['groups' => 'Default', 'create']
+)]
+#[ValidStartEndDate]
+#[ValidTimesheet]
+#[NoTimesheetOverlap]
 class Timesheet
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    #[ApiProperty(identifier: false)]
+    private int $id;
+
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[ApiProperty(identifier: true)]
+    #[Groups(['timesheet:read'])]
+    private Uuid $uuid;
 
     #[ORM\ManyToOne(inversedBy: 'timesheets')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    #[Assert\NotBlank()]
     private ?User $employee = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Assert\NotBlank()]
     private ?\DateTimeImmutable $startPeriod = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    #[Assert\NotBlank()]
     private ?\DateTimeImmutable $endPeriod = null;
 
+    /** @var Collection<int, TimesheetWorkDay> */
     #[ORM\OneToMany(targetEntity: TimesheetWorkDay::class, mappedBy: 'timesheet', cascade: ['persist'], orphanRemoval: true)]
+    #[Groups(['timesheet:read', 'timesheet:write'])]
+    #[Assert\Valid]
     private Collection $workDays;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private float $totalTime = 0;
 
     public function __construct()
     {
+        $this->uuid = Uuid::v4();
         $this->workDays = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -75,12 +148,13 @@ class Timesheet
         return $this;
     }
 
+    /** @return Collection<int, TimesheetWorkDay> */
     public function getWorkDays(): Collection
     {
         return $this->workDays;
     }
 
-    public function addWorkDay(WorkDay $workDay): self
+    public function addWorkDay(TimesheetWorkDay $workDay): self
     {
         if (!$this->workDays->contains($workDay)) {
             $this->workDays->add($workDay);
@@ -90,12 +164,52 @@ class Timesheet
         return $this;
     }
 
-    public function removeWorkDay(WorkDay $workDay): self
+    public function removeWorkDay(TimesheetWorkDay $workDay): self
     {
         if ($this->workDays->removeElement($workDay) && $workDay->getTimesheet() === $this) {
             $workDay->setTimesheet($this);
         }
 
         return $this;
+    }
+
+    public function setUuid(Uuid $uuid): Timesheet
+    {
+        $this->uuid = $uuid;
+
+        return $this;
+    }
+
+    public function getUuid(): Uuid
+    {
+        return $this->uuid;
+    }
+
+    public function isOwner(User $employee): bool
+    {
+        return $employee->getUserIdentifier() === $this->getEmployee()?->getUserIdentifier();
+    }
+
+    public function getTotalTime(): ?float
+    {
+        return $this->totalTime;
+    }
+
+    public function setTotalTime(float $totalTime): static
+    {
+        $this->totalTime = $totalTime;
+
+        return $this;
+    }
+
+    public function computeTotalTime(): float
+    {
+        $total = 0;
+
+        foreach ($this->workDays as $workDay) {
+            $total += $workDay->getProjectTime();
+        }
+
+        return $total;
     }
 }
