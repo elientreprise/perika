@@ -42,8 +42,8 @@ security:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/authenticated, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
-#        - { path: ^/api/*, roles: ROLE_USER }
-        - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/api/*, roles: ROLE_USER }
+#        - { path: ^/api, roles: PUBLIC_ACCESS }
 
 
 when@prod:
