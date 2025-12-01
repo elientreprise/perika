@@ -28,6 +28,8 @@ class TimesheetApiTest extends ApiTestCase
     private static Client $client;
     private static UserInterface $user;
 
+
+
     protected function setUp(): void
     {
         self::$alwaysBootKernel = true;
@@ -147,6 +149,35 @@ class TimesheetApiTest extends ApiTestCase
         return self::$client->request('POST', '/api/timesheets', [
             'json' => $payload,
         ]);
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     */
+    public function assertTimesheet(array $data): void
+    {
+        $this->assertSame('Timesheet', $data['@type']);
+        $this->assertArrayHasKey('uuid', $data);
+        $this->assertArrayHasKey('employee', $data);
+        $this->assertArrayHasKey('workDays', $data);
+
+        $this->assertIsArray($data['workDays']);
+        $this->assertCount(7, $data['workDays']);
+
+
+        $monday = $data['workDays'][1];
+
+        $this->assertSame('monday', $monday['day']);
+        $this->assertSame(7.4, $monday['projectTime']);
+        $this->assertTrue($monday['isMinDailyRestMet']);
+        $this->assertTrue($monday['isWorkShiftValid']);
+        $this->assertTrue($monday['workedMoreThanHalfDay']);
+        $this->assertSame(1, $monday['lunchBreak']);
+
+        $this->assertArrayHasKey('location', $monday);
+        $this->assertArrayHasKey('am', $monday['location']);
+        $this->assertArrayHasKey('pm', $monday['location']);
     }
 
     /**
@@ -784,5 +815,178 @@ class TimesheetApiTest extends ApiTestCase
                 ],
             ],
         ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupère une feuille de temps de l'utilisateur autorisé
+     */
+    public function testGetTimesheet(): void
+    {
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => self::$user,
+        ])->withWorkDays()->create();
+
+        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+
+        $data = $response->toArray();
+
+        $this->assertTimesheet($data);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupèration non autorisée d'une feuille de temps
+     */
+    public function testGetTimesheetNotAuthorized(): void
+    {
+
+        $employee = UserFactory::createOne();
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->create();
+
+        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertJsonContains([
+            'detail' => 'Access Denied.',
+            'status' => 403,
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupèration autorisé d'une feuille de temps par son manager
+     */
+    public function testGetTimesheetByManager(): void
+    {
+
+        $employee = UserFactory::createOne([
+            'manager' => self::$user,
+        ]);
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->create();
+
+        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+
+        $data = $response->toArray();
+
+        $this->assertTimesheet($data);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupèration de toutes les feuilles de temps de sois même
+     */
+    public function testGetCollectionTimesheet(): void
+    {
+        $timesheets = TimesheetFactory::new([
+            'employee' => self::$user,
+        ])->withWorkDays()->many(5)->create();
+
+        $response = self::$client->request('GET', '/api/employees/'. self::$user->getUuid() .'/timesheets');
+
+        $data = $response->toArray();
+
+        $this->assertSame('Collection', $data['@type']);
+        $this->assertSame(6, $data['totalItems']);
+        $this->assertArrayHasKey('member', $data);
+
+        $this->assertIsArray($data['member']);
+        $this->assertCount(6, $data['member']);
+
+
+        $timesheet = $data['member'][0];
+
+        $this->assertTimesheet($timesheet);
+
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupèration non authorisée de toutes les feuilles de temps d'un employé
+     */
+    public function testNotAuthorizedGetCollectionTimesheet(): void
+    {
+        $employee = UserFactory::createOne();
+
+        $timesheets = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->many(5)->create();
+
+        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets');
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertJsonContains([
+            'detail' => 'Access Denied.',
+            'status' => 403,
+        ]);
+
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Récupèration de toutes les feuilles de temps de son subordonné
+     */
+    public function testGetCollectionTimesheetSubordinate(): void
+    {
+        $employee = UserFactory::createOne([
+            'manager' => self::$user
+        ]);
+
+        $timesheets = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->many(5)->create();
+
+        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets');
+
+        $data = $response->toArray();
+
+        $this->assertSame('Collection', $data['@type']);
+        $this->assertSame(5, $data['totalItems']);
+        $this->assertArrayHasKey('member', $data);
+
+        $this->assertIsArray($data['member']);
+        $this->assertCount(5, $data['member']);
+
+        $timesheet = $data['member'][0];
+
+        $this->assertTimesheet($timesheet);
+
     }
 }
