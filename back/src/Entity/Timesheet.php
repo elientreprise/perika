@@ -5,11 +5,15 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
 use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
+use App\Enum\PermissionEnum;
 use App\Repository\TimesheetRepository;
 use App\State\Processor\CheckTimesheetExistsProcessor;
 use App\State\Processor\TimesheetCalculatePeriodProcessor;
@@ -54,12 +58,25 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Get(
             uriTemplate: '/timesheets/{uuid}',
-            normalizationContext: ['groups' => ['timesheet:read']],
+            normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+            security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)"
         ),
+        new GetCollection(
+             uriTemplate: '/employees/{employeeUuid}/timesheets',
+             uriVariables: [
+                 'employeeUuid' => new Link(
+                     toProperty: 'employee',
+                     fromClass: User::class,
+                     security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET_COLLECTION->value."', employee)"
+                 ),
+             ],
+             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+             itemUriTemplate: '/employees/{employeeId}/timesheets/{uuid}'
+        )
     ],
     normalizationContext: ['groups' => ['timesheet:read']],
     denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
-    validationContext: ['groups' => 'Default', 'create']
+    validationContext: ['groups' => 'Default', 'create', 'edit']
 )]
 #[ValidStartEndDate]
 #[ValidTimesheet]
@@ -84,6 +101,7 @@ class Timesheet
     private ?User $employee = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[Groups(['timesheet:item:read'])]
     #[Assert\NotBlank()]
     private ?\DateTimeImmutable $startPeriod = null;
 
@@ -99,6 +117,7 @@ class Timesheet
     private Collection $workDays;
 
     #[ORM\Column(options: ['default' => 0])]
+    #[Groups(['timesheet:item:read'])]
     private float $totalTime = 0;
 
     public function __construct()

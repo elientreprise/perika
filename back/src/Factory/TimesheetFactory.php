@@ -3,6 +3,7 @@
 namespace App\Factory;
 
 use App\Entity\Timesheet;
+use App\Entity\ValueObject\Location;
 use App\Enum\Entity\WeekDayEnum;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -36,6 +37,15 @@ final class TimesheetFactory extends PersistentObjectFactory
                 TimesheetWorkDayFactory::new([
                     'timesheet' => $timesheet,
                     'day' => $day,
+                    'projectTime' => 7.4,
+                    'isMinDailyRestMet' => true,
+                    'isWorkShiftValid' => true,
+                    'workedMoreThanHalfDay' => true,
+                    'lunchBreak' => 1,
+                    'location' => (new Location())
+                        ->setPm('string')
+                        ->setAm('string')
+                    ,
                 ])->create();
             }
         });

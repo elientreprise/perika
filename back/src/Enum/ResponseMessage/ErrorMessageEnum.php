@@ -20,6 +20,6 @@ enum ErrorMessageEnum: string
     case TS_CREATION_NOT_AUTHORIZED = 'Vous n\'êtes pas autorisé à créer une feuille de temps pour cet utilisateur.';
     case TS_ALREADY_EXIST = 'Une feuille de temps existe déjà pour cette période.';
     case TS_START_PERIOD_LESS_THAN_END_PERIOD = 'La date de début doit être inférieure à la date de fin.';
-
     case TS_END_PERIOD_GREATER_THAN_START_PERIOD = 'La date de fin doit être supérieur à la date de début.';
+    case TS_EDITION_NOT_AUTHORIZED = 'Vous n\'êtes pas autorisé à modifier cette feuille de temps.';
 }

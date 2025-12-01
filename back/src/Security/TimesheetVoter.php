@@ -39,6 +39,7 @@ class TimesheetVoter extends Voter
         return match ($attribute) {
             PermissionEnum::CAN_CREATE_TIMESHEET->value => $this->canCreate($timesheet, $user, $vote),
             PermissionEnum::CAN_VIEW_TIMESHEET->value => $this->canView($timesheet, $user, $vote),
+            PermissionEnum::CAN_EDIT_TIMESHEET->value => $this->canEdit($timesheet, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
@@ -48,6 +49,20 @@ class TimesheetVoter extends Voter
         if (!$timesheet->isOwner($user) && !$user->getSubordinates()->contains($timesheet->getEmployee())) {
             $vote?->addReason(sprintf(
                 ErrorMessageEnum::TS_CREATION_NOT_AUTHORIZED->value,
+                $user->getUserIdentifier()
+            ));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function canEdit(Timesheet $timesheet, User $user, ?Vote $vote): bool
+    {
+        if (!$timesheet->isOwner($user)) {
+            $vote?->addReason(sprintf(
+                ErrorMessageEnum::TS_EDITION_NOT_AUTHORIZED->value,
                 $user->getUserIdentifier()
             ));
 

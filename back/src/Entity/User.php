@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
@@ -182,6 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Timesheet>
      */
     #[ORM\OneToMany(targetEntity: Timesheet::class, mappedBy: 'employee')]
+    #[Link(toProperty: 'employee')]
     private Collection $timesheets;
 
     public function __construct()
