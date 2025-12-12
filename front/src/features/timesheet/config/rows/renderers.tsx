@@ -1,7 +1,8 @@
 import React from "react";
+import type {RenderParams} from "../../../../shared/types/RenderParams.ts";
 
 export const rowRenderers = {
-    isMinDailyRestMet: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => {
+    isMinDailyRestMet: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
 
         if (readonly) {
             return (
@@ -14,8 +15,8 @@ export const rowRenderers = {
         return (
             <select
                 value={value}
-                onChange={(v) => onChange(rowKey, colKey, v.target.value)}
-                className={`border rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${error ? "border-error" : ""}`}
+                onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
+                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -25,7 +26,7 @@ export const rowRenderers = {
         )
     },
 
-    isWorkShiftValid: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => {
+    isWorkShiftValid: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
 
         if (readonly) {
             return (
@@ -38,8 +39,8 @@ export const rowRenderers = {
         return (
             <select
                 value={value}
-                onChange={(v) => onChange(rowKey, colKey, v.target.value)}
-                className={`border rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${error ? "border-error" : ""}`}
+                onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
+                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -49,7 +50,7 @@ export const rowRenderers = {
         )
     },
 
-    workedMoreThanHalfDay: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => {
+    workedMoreThanHalfDay: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
 
         if (readonly) {
             return (
@@ -62,8 +63,8 @@ export const rowRenderers = {
         return (
             <select
                 value={value}
-                onChange={(v) => onChange(rowKey, colKey, v.target.value)}
-                className={`border rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${error ? "border-error" : ""}`}
+                onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
+                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -73,7 +74,7 @@ export const rowRenderers = {
         )
     },
 
-    am: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => {
+    am: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
 
         if (readonly) {
             return (
@@ -82,12 +83,12 @@ export const rowRenderers = {
                 </div>
             )
         }
-
+   
         return (
             <select
                 value={value}
-                onChange={(v) => onChange(rowKey, colKey, v.target.value)}
-                className={`border rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${error ? "border-error" : ""}`}
+                onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
+                className={` rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
             >
                 <option value={""}></option>
                 <option value={"entreprise"}>Entreprise</option>
@@ -101,7 +102,7 @@ export const rowRenderers = {
         )
     },
 
-    pm: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => {
+    pm: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
 
         if (readonly) {
             return (
@@ -114,8 +115,8 @@ export const rowRenderers = {
         return (
             <select
                 value={value}
-                onChange={(v) => onChange(rowKey, colKey, v.target.value)}
-                className={`border rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${error ? "border-error" : ""}`}
+                onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
+                className={` rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
             >
                 <option value={""}></option>
                 <option value={"entreprise"}>Entreprise</option>

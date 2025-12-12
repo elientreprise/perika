@@ -1,73 +1,89 @@
 import type {TableProps} from "../../types/TableProps.ts";
-import {buildErrorKey} from "../../../features/timesheet/utils/parseValidationErrors.ts";
+import type {RenderParams} from "../../types/RenderParams.ts";
 
 
 export default function Table({
-                                                                                    rows,
-                                                                                    columns,
-                                                                                    entries,
-                                                                                    onChange,
-                                                                                    className,
-                                                                                    footerRows,
-                                                                                    fieldErrors,
-                                                                                    readonly
-                                                                                }: Readonly<TableProps>)
-{
-    const hasError = (rowKey: string, colIndex: number): boolean => {
-        const errorKey = buildErrorKey(colIndex, rowKey);
-        return !!fieldErrors?.[errorKey];
+                                  columns,
+                                  rows,
+                                  data,
+                                  onChange,
+                                  errors = {},
+                                  readonly = false,
+                                  footerRows,
+                                  className
+                              }: Readonly<TableProps>) {
+
+    const getError = (rowKey: string, colKey: string) => {
+        const errorKey = `${rowKey}.${colKey}`;
+        return errors?.[errorKey];
+    };
+
+    const hasError = (rowKey: string, colKey: string) => {
+        return !!getError(rowKey, colKey);
+    };
+
+    const renderDefaultCell = (params: RenderParams) => {
+        const { value, rowKey, colKey, onChange, hasError, readonly } = params;
+
+        if (readonly) {
+            return <span className={hasError ? "text-error font-semibold" : ""}>{value ?? "-"}</span>;
+        }
+
+        return (
+            <input
+                type="number"
+                value={value ?? ""}
+                onChange={(e) => onChange?.(rowKey, colKey, Number(e.target.value))}
+                className={`input input-xs w-20 text-center ${hasError ? "border-error" : "border"}`}
+            />
+        );
     };
 
     return (
-        <table className={(className ?? `w-full border-collapse border table table-xs`)}>
+        <table className={className ?? "w-full border-collapse border table table-xs"}>
             <thead>
             <tr>
-                <th className="border p-2 text-xs invisible"></th>
-                {columns.map(col => (
-                    <th key={col.key} className="border p-2 text-xs opacity-90 text-center">
+                <th className="border p-2 text-xs"></th>
+                {columns.map((col) => (
+                    <th key={col.key} className="border p-2 text-xs text-center opacity-90">
                         {col.label}
                     </th>
                 ))}
             </tr>
             </thead>
+
             <tbody>
-            {rows.map(row => (
+            {rows.map((row) => (
                 <tr key={row.key} className={row.disabled ? "opacity-40 pointer-events-none" : ""}>
-                    <td className="border p-2 text-xs ">{row.label}</td>
+                    <td className="border p-2 text-xs">{row.label}</td>
 
-                    {columns.map((col, colIndex) => {
-                        const cellValue = entries[row.key][col.key];
-
+                    {columns.map((col) => {
+                        const value = data[row.key]?.[col.key];
+                        const error = hasError(row.key, col.key);
+                        const errorMessage = getError(row.key, col.key);
                         const disabled = row.disabled || col.disabled;
 
-                        const error = hasError(row.key, colIndex);
+                        const renderParams: RenderParams = {
+                            value,
+                            rowKey: row.key,
+                            colKey: col.key,
+                            onChange: disabled ? undefined : onChange,
+                            hasError: error,
+                            readonly,
+                        };
 
                         return (
                             <td key={col.key} className="border p-2 text-center">
                                 <div>
+                                    {row.render
+                                        ? row.render(renderParams)
+                                        : col.render
+                                            ? col.render(renderParams)
+                                            : renderDefaultCell(renderParams)}
 
-                                    {col.render ? (
-                                        col.render(cellValue, row.key, col.key, onChange, error, readonly)
-                                    ) : row.render ? (
-                                        row.render(cellValue, row.key, col.key, onChange, error, readonly)
-                                    ) : (
-
-                                        <input
-                                            type="number"
-                                            disabled={disabled}
-                                            value={cellValue}
-                                            onChange={(e) =>
-                                                onChange?.(
-                                                    row.key,
-                                                    col.key,
-                                                    Number(e.target.value)
-                                                )
-                                            }
-                                            className={`input ${!readonly ? 'border' : ''} input-sm w-20 text-center ${
-                                                error ? "border-error" : ""
-                                            }`}
-                                        />
-                                    )}
+                                    {/*{error && errorMessage && (*/}
+                                    {/*    <div className="text-error text-xs mt-1">{errorMessage}</div>*/}
+                                    {/*)}*/}
                                 </div>
                             </td>
                         );
@@ -75,22 +91,27 @@ export default function Table({
                 </tr>
             ))}
             </tbody>
-            <tfoot>
-                {footerRows && footerRows.map(row => (
 
-                    <tr key={row.key} className={row.disabled ? "opacity-40 pointer-events-none" : ""}>
-                        <td className="border p-2 text-xs text-center">{row.label}</td>
+            {footerRows && footerRows.length > 0 && (
+                <tfoot>
+                {footerRows.map((row) => (
+                    <tr key={row.key} className="bg-base-200 font-semibold">
+                        <td className="border p-2 text-xs">{row.label}</td>
 
-                        {columns.map(col => {
-                            return (
-                                <td key={col.key} className="border p-2 text-center">
-                                    {row.render?.(0, row.key, col.key, onChange)}
-                                </td>
-                            );
-                        })}
+                        {columns.map((col) => (
+                            <td key={col.key} className="border p-2 text-center">
+                                {row.render?.({
+                                    value: data[row.key]?.[col.key],
+                                    rowKey: row.key,
+                                    colKey: col.key,
+                                    readonly: true,
+                                })}
+                            </td>
+                        ))}
                     </tr>
                 ))}
-            </tfoot>
+                </tfoot>
+            )}
         </table>
     );
 }

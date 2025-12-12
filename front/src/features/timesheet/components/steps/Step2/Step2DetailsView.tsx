@@ -1,66 +1,43 @@
-import type {ColumnDescriptor} from "../../../../../shared/types/ColumnDescriptor.ts";
-import type {RowDescriptor} from "../../../../../shared/types/RowDescriptor.ts";
-import type {EntriesTable} from "../../../../../shared/types/EntriesTable.ts";
-import {TimesheetLeaves} from "../../../types/TimesheetLeavesType.ts";
-import {DaysOfWeek} from "../../../../../shared/types/DaysOfWeekType.ts";
-import Table from "../../../../../shared/components/ui/Table.tsx";
-import type {FieldErrors} from "../../../types/ValidationError.ts";
 
-type Step2DetailsViewProps = {
+import Table from "../../../../../shared/components/ui/Table";
+import type {useTableData} from "../../../../../shared/hooks/useTableData.ts";
+import {columnsWithProject, columnsWithTotal, dayColumns} from "../../../config/columns/columns.tsx";
+import {rowsLeaves, rowsLocation, rowsProject, rowsRest} from "../../../config/rows/rows.tsx";
+import React from "react";
+
+
+type Props = {
     current: boolean;
     onPrevious?: () => void;
-    columnsWithProject: ColumnDescriptor[],
-    rowsProject: RowDescriptor[],
-    projectEntries: EntriesTable,
-    changeProjects?: (row: string, col: string, value: number) => void,
-    columnsWithTotal: ColumnDescriptor[],
-    hoursEntries?: EntriesTable,
-    changeHours?: (row: string, col: string, value: number) => void,
-    totalsByDay: Record<string, number>,
-    totalsGlobalByDay: Record<string, number>,
-    rowsRest: RowDescriptor[],
-    restEntries: EntriesTable,
-    changeRests?: (row: string, col: string, value: number) => void,
-    rowsLocation: RowDescriptor[],
-    locationEntries: EntriesTable,
-    changeLocations?: (row: string, col: string, value: number) => void,
-    onSubmit?: () => void,
-    fieldErrors?: FieldErrors;
-    readonly?: boolean;
+    onSubmit?: () => void;
+    projectTable: ReturnType<typeof useTableData>;
+    restTable: ReturnType<typeof useTableData>;
+    locationTable: ReturnType<typeof useTableData>;
+    leavesTable: ReturnType<typeof useTableData>;
+    errors: Record<string, string>;
+    readonly:boolean;
 };
+
 export default function Step2DetailsView({
                                              current,
                                              onPrevious,
-                                             columnsWithProject,
-                                             projectEntries,
-                                             changeProjects,
-                                             rowsProject,
-                                             columnsWithTotal,
-                                             hoursEntries,
-                                             changeHours,
-                                             totalsByDay,
-                                             totalsGlobalByDay,
-                                             rowsRest,
-                                             restEntries,
-                                             changeRests,
-                                             rowsLocation,
-                                             locationEntries,
-                                             changeLocations,
                                              onSubmit,
-                                             fieldErrors = {},
+                                             projectTable,
+                                             restTable,
+                                             locationTable,
+                                             leavesTable,
+                                             errors,
                                              readonly
-
-}: Readonly<Step2DetailsViewProps>) {
+                                         }: Readonly<Props>) {
     return (
-        <div className="w-full">
-            <h3 className="text-xl font-semibold mb-4 mt-3">Détails heures projet</h3>
-
+        <div className="w-full space-y-6">
+            <h3 className="text-xl font-semibold">Heures projet</h3>
             <Table
                 columns={columnsWithProject}
                 rows={rowsProject}
-                entries={projectEntries}
-                onChange={changeProjects}
-                fieldErrors={fieldErrors}
+                data={projectTable.data}
+                onChange={projectTable.handleChange}
+                errors={errors}
                 readonly={readonly}
             />
 
@@ -68,23 +45,58 @@ export default function Step2DetailsView({
 
             <Table
                 columns={columnsWithTotal}
-                rows={TimesheetLeaves}
-                entries={hoursEntries}
-                onChange={changeHours}
-                footerColumns={DaysOfWeek}
+                rows={rowsLeaves}
+                data={leavesTable.data}
+                onChange={leavesTable.handleChange}
+                errors={errors}
                 footerRows={[
-                    { key: "internal", label: "Total absences", render: (value, rowKey, colKey) => <strong>{totalsByDay[colKey]}</strong> } as RowDescriptor,
-                    { key: "global", label: "Total global", render: (value, rowKey, colKey) => <strong>{totalsGlobalByDay[colKey]}</strong> } as RowDescriptor
+                    {
+                        key: "total-internal",
+                        label: "Total absences",
+                        render: ({ colKey }) => {
+                            const total = rowsLeaves.reduce((sum, row) => {
+                                const value = leavesTable.data[row.key]?.[colKey];
+                                return sum + (typeof value === "number" ? value : 0);
+                            }, 0);
+                            return <strong>{total}</strong>;
+                        },
+                    },
+                    {
+                        key: "total-global",
+                        label: "Total global",
+                        render: ({ colKey }) => {
+                            const projectValue = projectTable.data.projectRow?.[colKey] || 0;
+                            const hoursTotal = rowsLeaves.reduce((sum, row) => {
+                                const value = leavesTable.data[row.key]?.[colKey];
+                                return sum + (typeof value === "number" ? value : 0);
+                            }, 0);
+                            return <strong>{projectValue + hoursTotal}</strong>;
+                        },
+                    },
                 ]}
-                fieldErrors={fieldErrors}
                 readonly={readonly}
             />
 
-            <h3 className="text-xl font-semibold mb-4 mt-6">Informations complémentaires</h3>
-            <Table columns={DaysOfWeek} rows={rowsRest} entries={restEntries} onChange={changeRests} fieldErrors={fieldErrors} readonly={readonly} />
 
-            <h4 className="text-xl font-semibold mb-4 mt-6">Localisation</h4>
-            <Table columns={DaysOfWeek} rows={rowsLocation} entries={locationEntries} onChange={changeLocations} fieldErrors={fieldErrors} readonly={readonly} />
+            <h3 className="text-xl font-semibold">Informations complémentaires</h3>
+            <Table
+                columns={dayColumns}
+                rows={rowsRest}
+                data={restTable.data}
+                onChange={restTable.handleChange}
+                errors={errors}
+                readonly={readonly}
+            />
+
+            <h3 className="text-xl font-semibold">Localisation</h3>
+            <Table
+                columns={dayColumns}
+                rows={rowsLocation}
+                data={locationTable.data}
+                onChange={locationTable.handleChange}
+                errors={errors}
+                readonly={readonly}
+            />
 
             {current && (
                 <div className="flex gap-3 mt-4">

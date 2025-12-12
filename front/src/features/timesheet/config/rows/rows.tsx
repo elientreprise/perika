@@ -1,6 +1,9 @@
 
 import {rowRenderers} from "./renderers.tsx";
 import type {RowDescriptor} from "../../../../shared/types/RowDescriptor.ts";
+import type {ColumnDescriptor} from "../../../../shared/types/ColumnDescriptor.ts";
+import {DaysOfWeek} from "../../../../shared/types/DaysOfWeekType.ts";
+import {TimesheetLeaves} from "../../types/TimesheetLeavesType.ts";
 
 export const rowsProject: RowDescriptor[] = [
     { key: "projectRow", label: "" }
@@ -17,3 +20,13 @@ export const rowsLocation: RowDescriptor[] = [
     { key: "am", label: "Matin", render: rowRenderers.am },
     { key: "pm", label: "Après-midi", render: rowRenderers.pm }
 ];
+
+export const rowsLeaves: RowDescriptor[] = TimesheetLeaves.map((leave) => ({
+    key: leave.key,
+    label: leave.label,
+}));
+
+
+export const rowsTotal = [
+
+]

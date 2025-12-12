@@ -1,9 +1,10 @@
-import {JSX} from "react";
+import type {RenderParams} from "./RenderParams.ts";
+import type {ReactNode} from "react";
 
 export type RowDescriptor = {
     key: string;
     label: string;
     disabled?: boolean;
-    render?: (value: number | string | null | boolean, rowKey: string, colKey: string, onChange, error?: boolean) => JSX.Element;
+    render?: (params: RenderParams) => ReactNode;
     readonly?: boolean;
 };

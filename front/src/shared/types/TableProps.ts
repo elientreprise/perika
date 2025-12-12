@@ -3,13 +3,13 @@ import type {RowDescriptor} from "./RowDescriptor.ts";
 import type {ColumnDescriptor} from "./ColumnDescriptor.ts";
 import type {FieldErrors} from "../../features/timesheet/types/ValidationError.ts";
 
-export interface TableProps {
-    rows: RowDescriptor[];
+export type TableProps = {
     columns: ColumnDescriptor[];
-    entries: EntriesTable;
-    onChange?: (row: string | number, column: string | number, value: number) => void;
-    className?: string;
-    footerRows?: RowDescriptor[];
+    rows: RowDescriptor[];
+    data: EntriesTable;
+    onChange?: (rowKey: string, colKey: string, value: any) => void;
+    errors?: FieldErrors;
     readonly?: boolean;
-    fieldErrors?: FieldErrors;
-}
+    footerRows?: RowDescriptor[];
+    className?: string;
+};

@@ -2,13 +2,13 @@ import {useFlash} from "../../../../../shared/hooks/useFlash.ts";
 import {create} from "../../../services/timesheet.ts";
 import Step2DetailsView from "./Step2DetailsView.tsx";
 import {useTimesheetStore} from "../../../store/useTimesheetStore.ts";
-import type {WorkDayType} from "../../../types/TimesheetType.ts";
 import {toBool} from "../../../../../shared/utils/ToBool.ts";
 import {useNavigate} from "react-router-dom";
 import {useTimesheetFormData} from "../../../hooks/useTimesheetFormData.ts";
 import {useState} from "react";
 import type {FieldErrors} from "../../../types/ValidationError.ts";
-import {buildErrorKey, parsePropertyPath, parseValidationErrors} from "../../../utils/parseValidationErrors.ts";
+import { parseValidationErrors} from "../../../utils/parseValidationErrors.ts";
+import type {WorkDayType} from "../../../types/TimesheetType.ts";
 
 type Props = {
     onNext: () => void;
@@ -29,100 +29,62 @@ export default function Step2DetailsContainer({
     const { push } = useFlash();
 
     const {
-        columnsWithTotal,
-        columnsWithProject,
-        rowsProject,
-        rowsRest,
-        rowsLocation,
-        hoursEntries,
-        projectEntries,
-        restEntries,
-        locationEntries,
-        changeHours,
-        changeProjects,
-        changeRests,
-        changeLocations,
-        totalsByDay,
-        totalsGlobalByDay,
-    } = useTimesheetFormData({ readonly: false });
+        projectTable,
+        restTable,
+        locationTable,
+        leavesTable,
+    } = useTimesheetFormData({ timesheet });
+
+
     const onSubmit = async () => {
+        setFieldErrors({});
 
         const updatedWorkDays: WorkDayType[] = timesheet.workDays.map((workDay) => {
             const dayKey = workDay.day;
 
             return {
                 ...workDay,
-                isWorkShiftValid: restEntries.isWorkShiftValid ? toBool(restEntries.isWorkShiftValid?.[dayKey]) : null,
-                lunchBreak: restEntries.lunchBreak?.[dayKey] || null,
-                workedMoreThanHalfDay: restEntries.workedMoreThanHalfDay ? toBool(restEntries.workedMoreThanHalfDay?.[dayKey]) : null,
+                projectTime: projectTable.data.projectRow?.[dayKey] || 0,
+                isMinDailyRestMet: toBool(restTable.data.isMinDailyRestMet?.[dayKey]),
+                isWorkShiftValid: toBool(restTable.data.isWorkShiftValid?.[dayKey]),
+                workedMoreThanHalfDay: toBool(restTable.data.workedMoreThanHalfDay?.[dayKey]),
+                lunchBreak: restTable.data.lunchBreak?.[dayKey] || null,
                 location: {
-                    am: locationEntries.am?.[dayKey] === 0 ? "" : locationEntries.am?.[dayKey] || null,
-                    pm: locationEntries.pm?.[dayKey] === 0 ? "" : locationEntries.pm?.[dayKey] || null,
+                    am: locationTable.data.am?.[dayKey] || null,
+                    pm: locationTable.data.pm?.[dayKey] || null,
                 },
-                projectTime: projectEntries.projectRow?.[dayKey] || 0,
-                isMinDailyRestMet: restEntries.isMinDailyRestMet ? toBool(restEntries.isMinDailyRestMet?.[dayKey]) : null,
             } as WorkDayType;
         });
 
-        update({
-            workDays: updatedWorkDays,
-        });
-
-        const finalTimesheet = useTimesheetStore.getState?.().timesheet;
+        update({ workDays: updatedWorkDays });
 
         try {
-            const response = await create(finalTimesheet);
+            const response = await create(useTimesheetStore.getState().timesheet);
             push("Timesheet créé avec succès !", "success");
-            navigate(
-                `/finance/employees/${response.employeeUuid}/timesheets/${response.uuid}`,
-            )
-
-        } catch (error : any) {
+            navigate(`/finance/employees/${response.employeeUuid}/timesheets/${response.uuid}`);
+        } catch (error: any) {
             if (error.response?.data?.violations) {
-                const errors = parseValidationErrors(error.response.data.violations);
+                const parsedErrors = parseValidationErrors(error.response.data.violations);
+                setFieldErrors(parsedErrors);
 
-                const tableErrors: FieldErrors = {};
-
-                for (const [propertyPath, message] of Object.entries(errors)) {
-                    const parsed = parsePropertyPath(propertyPath);
-                    if (parsed) {
-                        const { dayIndex, field, subField } = parsed;
-                        const errorKey = buildErrorKey(dayIndex, subField || field);
-                        tableErrors[errorKey] = message;
-                    }
-
+                for (const message of Object.values(parsedErrors)) {
                     push(message, "error");
                 }
-
-                setFieldErrors(tableErrors);
-            } else {
-                push("Une erreur est survenue lors de la création du timesheet", "error");
             }
         }
-
-    }
+    };
 
     return (
         <Step2DetailsView
             current={current}
             onPrevious={onPrevious}
-            columnsWithProject={columnsWithProject}
-            rowsProject={rowsProject}
-            projectEntries={projectEntries}
-            changeProjects={changeProjects}
-            columnsWithTotal={columnsWithTotal}
-            hoursEntries={hoursEntries}
-            changeHours={changeHours}
-            totalsByDay={totalsByDay}
-            totalsGlobalByDay={totalsGlobalByDay}
-            rowsRest={rowsRest}
-            restEntries={restEntries}
-            changeRests={changeRests}
-            rowsLocation={rowsLocation}
-            locationEntries={locationEntries}
-            changeLocations={changeLocations}
+            errors={fieldErrors}
+            locationTable={locationTable}
+            projectTable={projectTable}
+            restTable={restTable}
+            leavesTable={leavesTable}
             onSubmit={onSubmit}
-            fieldErrors={fieldErrors}
+            readonly={false}
         />
     )
 }

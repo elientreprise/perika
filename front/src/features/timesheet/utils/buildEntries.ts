@@ -1,5 +1,7 @@
 import type {DaysOfWeekKey} from "../../../shared/types/DaysOfWeekType.ts";
 import type {EntriesTable} from "../../../shared/types/EntriesTable.ts";
+import type {RowDescriptor} from "../../../shared/types/RowDescriptor.ts";
+import type {ColumnDescriptor} from "../../../shared/types/ColumnDescriptor.ts";
 
 
 /**
@@ -7,8 +9,8 @@ import type {EntriesTable} from "../../../shared/types/EntriesTable.ts";
  *
  */
 export function buildEntries<T extends string>(
-    rows: { key: T }[],
-    columns: { key: DaysOfWeekKey | string }[]
+    rows: RowDescriptor[],
+    columns: ColumnDescriptor[]
 ): EntriesTable {
     const result: Record<T, Record<string, number | null>> = {};
 

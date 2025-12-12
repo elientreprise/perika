@@ -11,39 +11,22 @@ export default function Step2DetailsResume({
                                            }: Readonly<Props>) {
 
     const {
-        columnsWithTotal,
-        columnsWithProject,
-        rowsProject,
-        rowsRest,
-        rowsLocation,
-        hoursEntries,
-        projectEntries,
-        restEntries,
-        locationEntries,
-        totalsByDay,
-        totalsGlobalByDay,
-    } = useTimesheetFormData({
-        readonly: true,
-        initialData: timesheet
-    });
-
+        projectTable,
+        restTable,
+        locationTable,
+        leavesTable,
+    } = useTimesheetFormData({ timesheet });
 
     return (
         <Step2DetailsView
             current={false}
-            onPrevious={()=>{}}
-            columnsWithProject={columnsWithProject}
-            rowsProject={rowsProject}
-            projectEntries={projectEntries}
-            columnsWithTotal={columnsWithTotal}
-            hoursEntries={hoursEntries}
-            totalsByDay={totalsByDay}
-            totalsGlobalByDay={totalsGlobalByDay}
-            rowsRest={rowsRest}
-            restEntries={restEntries}
-            rowsLocation={rowsLocation}
-            locationEntries={locationEntries}
+            onPrevious={() => {}}
+            locationTable={locationTable}
+            projectTable={projectTable}
+            restTable={restTable}
+            leavesTable={leavesTable}
+            errors={{}}
             readonly={true}
         />
-    );
+    )
 }

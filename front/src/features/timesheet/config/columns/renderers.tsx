@@ -2,19 +2,20 @@
 import {CategorySelect} from "../../../category/components/CategorySelect.tsx";
 import {ActivitySelect} from "../../../activity/components/ActivitySelect.tsx";
 import {ProjectSelect} from "../../../project/components/ProjectSelect.tsx";
+import type {RenderParams} from "../../../../shared/types/RenderParams.ts";
 
 export const columnRenderers = {
-    project: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => (
-        <ProjectSelect value={value} onChange={(v) => onChange(rowKey, colKey, v)} error={error} readonly={readonly} />
+    project: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => (
+        <ProjectSelect value={value} onChange={(v) => onChange?.(rowKey, colKey, v)} error={hasError} readonly={readonly} />
     ),
-    activity: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => (
-        <ActivitySelect value={value} onChange={(v) => onChange(rowKey, colKey, v)} error={error} readonly={readonly} />
+    activity: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => (
+        <ActivitySelect value={value} onChange={(v) => onChange?.(rowKey, colKey, v)} error={hasError} readonly={readonly} />
     ),
-    typeSource: (value: number, rowKey: string) => <strong>10000</strong>,
+    typeSource: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => <strong>10000</strong>,
 
-    category: (value: number, rowKey: string, colKey: string, onChange, error?: boolean, readonly?: boolean) => (
-        <CategorySelect value={value} onChange={(v) => onChange(rowKey, colKey, v)} error={error} readonly={readonly} />
+    category: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => (
+        <CategorySelect value={value} onChange={(v) => onChange?.(rowKey, colKey, v)} error={hasError} readonly={readonly} />
     ),
 
-    total: (value: number) => <strong>{value}</strong>,
+    total: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => <strong>{value}</strong>,
 };

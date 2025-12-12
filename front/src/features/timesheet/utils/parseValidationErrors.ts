@@ -1,40 +1,28 @@
-import type { ValidationError, FieldErrors } from "../types/ValidationError";
+import type { ValidationError } from "../types/ValidationError";
+import { DaysOfWeek } from "../../../shared/types/DaysOfWeekType";
 
-/**
- * Parse les violations API Platform en objet d'erreurs indexé par propertyPath
- */
-export function parseValidationErrors(violations: ValidationError[]): FieldErrors {
-    const errors: FieldErrors = {};
+export function parseValidationErrors(violations: ValidationError[]): Record<string, string> {
+    const errors: Record<string, string> = {};
 
     for (const violation of violations) {
-        errors[violation.propertyPath] = violation.message;
+
+        const match = violation.propertyPath.match(/workDays\[(\d+)\]\.(.+)/);
+
+        if (match) {
+            const dayIndex = parseInt(match[1], 10);
+            const fieldPath = match[2];
+
+
+            const dayKey = DaysOfWeek[dayIndex]?.key;
+
+            if (dayKey) {
+                const fieldParts = fieldPath.split(".");
+                const fieldKey = fieldParts[fieldParts.length - 1];
+                const errorKey = `${fieldKey}.${dayKey}`;
+                errors[errorKey] = violation.message;
+            }
+        }
     }
 
     return errors;
-}
-
-/**
- * Extrait les informations d'une propertyPath
- * Ex: "workDays[5].location.am" => { dayIndex: 5, field: "location", subField: "am" }
- */
-export function parsePropertyPath(propertyPath: string) {
-    const workDayMatch = propertyPath.match(/workDays\[(\d+)\]\.(.+)/);
-
-    if (!workDayMatch) {
-        return null;
-    }
-
-    const dayIndex = parseInt(workDayMatch[1], 10);
-    const fieldPath = workDayMatch[2];
-
-    const [field, subField] = fieldPath.split('.');
-    return { dayIndex, field, subField };
-}
-
-/**
- * Construit une clé d'erreur pour le tableau
- * Ex: (5, "am") => "am.5"
- */
-export function buildErrorKey(dayIndex: number, field: string): string {
-    return `${field}.${dayIndex}`;
 }

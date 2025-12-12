@@ -1,50 +1,32 @@
-import { useMemo, useEffect } from "react";
-import { baseColumns, projectColumns, totalColumn } from "../config/columns/columns";
-import { TimesheetLeaves } from "../types/TimesheetLeavesType";
-import { buildEntries } from "../utils/buildEntries";
-import { rowsLocation, rowsProject, rowsRest } from "../config/rows/rows";
-import { DaysOfWeek } from "../../../shared/types/DaysOfWeekType";
-import { useTimesheetEntries } from "./useTimesheetEntries";
-import { useTotals } from "./useTotals";
-import type {TimesheetType, WorkDayType} from "../types/TimesheetType.ts";
+import { useTableData } from "../../../shared/hooks/useTableData.ts";
+import {columnsWithProject, columnsWithTotal, dayColumns} from "../config/columns/columns.tsx";
+import {rowsLeaves, rowsLocation, rowsProject, rowsRest} from "../config/rows/rows.tsx";
 import type {EntriesTable} from "../../../shared/types/EntriesTable.ts";
+import {useEffect, useState} from "react";
+import type {TimesheetType} from "../types/TimesheetType.ts";
 import {roundFloat} from "../../../shared/utils/RoundNumber.ts";
 
 type UseTimesheetFormDataOptions = {
     readonly?: boolean;
-    initialData?: TimesheetType;
+    timesheet?: TimesheetType;
 };
 
 export function useTimesheetFormData(options: UseTimesheetFormDataOptions = {}) {
-    const { readonly = false, initialData } = options;
+    const { timesheet } = options;
 
-    const columnsWithTotal = useMemo(() => [...baseColumns, totalColumn], []);
-    const columnsWithProject = useMemo(() => [...projectColumns, ...columnsWithTotal], [columnsWithTotal]);
+    const [initialProjectData, setInitialProjectData] = useState<EntriesTable>({})
+    const [initialRestData, setInitialRestData] = useState<EntriesTable>({})
+    const [initialLocationData, setInitialLocationData] = useState<EntriesTable>({})
+    const [initialLeavesData, setInitialLeavesData] = useState<EntriesTable>({})
 
-    const initialLeaves = useMemo(
-        () => buildEntries(TimesheetLeaves, columnsWithTotal),
-        [columnsWithTotal]
-    );
-    const initialProjects = useMemo(
-        () => buildEntries(rowsProject, columnsWithProject),
-        [columnsWithProject]
-    );
-    const initialRest = useMemo(
-        () => buildEntries(rowsRest, DaysOfWeek),
-        []
-    );
-    const initialLocation = useMemo(
-        () => buildEntries(rowsLocation, DaysOfWeek),
-        []
-    );
-
-    const { entries: hoursEntries, handleChange: changeHours, setEntries: setHoursEntries } = useTimesheetEntries(initialLeaves, DaysOfWeek);
-    const { entries: projectEntries, handleChange: changeProjects, setEntries: setProjectEntries } = useTimesheetEntries(initialProjects, DaysOfWeek);
-    const { entries: restEntries, handleChange: changeRests, setEntries: setRestEntries } = useTimesheetEntries(initialRest, DaysOfWeek);
-    const { entries: locationEntries, handleChange: changeLocations, setEntries: setLocationEntries } = useTimesheetEntries(initialLocation, DaysOfWeek);
+    const projectTable = useTableData({ rows: rowsProject, columns: columnsWithProject, initialData: initialProjectData });
+    const restTable = useTableData({ rows: rowsRest, columns: dayColumns, initialData: initialRestData });
+    const locationTable = useTableData({ rows: rowsLocation, columns: dayColumns, initialData: initialLocationData });
+    const leavesTable = useTableData({ rows: rowsLeaves, columns: columnsWithTotal, initialData: initialLeavesData });
 
     useEffect(() => {
-        if (!initialData?.workDays) return;
+
+        if (!timesheet?.workDays) return;
 
         const projectData: EntriesTable = { projectRow: {} };
         const restData: EntriesTable = {
@@ -58,7 +40,7 @@ export function useTimesheetFormData(options: UseTimesheetFormDataOptions = {}) 
             pm: {},
         };
 
-        for (const workDay of initialData.workDays) {
+        for (const workDay of timesheet.workDays) {
             const dayKey = workDay.day;
 
             projectData.projectRow[dayKey] = workDay.projectTime || 0;
@@ -72,40 +54,20 @@ export function useTimesheetFormData(options: UseTimesheetFormDataOptions = {}) 
             locationData.pm[dayKey] = workDay.location?.pm;
         }
 
-        projectData.projectRow['total'] = initialData.workDays.reduce(
+        projectData.projectRow['total'] = timesheet.workDays.reduce(
             (sum, day) => roundFloat(sum + (day.projectTime || 0)),
             0
         );
 
-        setProjectEntries(projectData);
-        setRestEntries(restData);
-        setLocationEntries(locationData)
-
-
-    }, [initialData, setLocationEntries, setProjectEntries, setRestEntries]);
-
-    const totalsByDay = useTotals([hoursEntries], columnsWithTotal);
-    const totalsGlobalByDay = useTotals([hoursEntries, projectEntries], columnsWithTotal);
+        setInitialProjectData(projectData)
+        setInitialRestData(restData)
+        setInitialLocationData(locationData)
+    }, [timesheet]);
 
     return {
-        columnsWithTotal,
-        columnsWithProject,
-
-        rowsProject,
-        rowsRest,
-        rowsLocation,
-
-        hoursEntries,
-        projectEntries,
-        restEntries,
-        locationEntries,
-
-        changeHours: readonly ? undefined : changeHours,
-        changeProjects: readonly ? undefined : changeProjects,
-        changeRests: readonly ? undefined : changeRests,
-        changeLocations: readonly ? undefined : changeLocations,
-
-        totalsByDay,
-        totalsGlobalByDay,
+        projectTable,
+        restTable,
+        locationTable,
+        leavesTable,
     };
 }
