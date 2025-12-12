@@ -17,6 +17,11 @@ readonly class TimesheetService
         return $this->timesheetRepository->findOneBy(['id' => $id]);
     }
 
+    public function getByEmployee(string $employeeUuid, string $uuid): ?Timesheet
+    {
+        return $this->timesheetRepository->findOneByEmployee($employeeUuid, $uuid);
+    }
+
     public function getOverlapTimesheet(User $employee, \DateTimeInterface $startPeriod, \DateTimeInterface $endPeriod): bool
     {
         return $this->timesheetRepository->hasOverlap($employee, $startPeriod, $endPeriod);

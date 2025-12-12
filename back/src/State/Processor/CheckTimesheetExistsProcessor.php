@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
+use App\Enum\ResponseMessage\ErrorMessageEnum;
 use App\Service\TimesheetService;
 
 readonly class CheckTimesheetExistsProcessor implements ProcessorInterface
@@ -23,6 +24,8 @@ readonly class CheckTimesheetExistsProcessor implements ProcessorInterface
 
         $exists = $this->timesheetService->getOverlapTimesheet($data->employee, $start, $end);
 
-        return new CheckTimesheetResponse($exists);
+        $message = $exists ? ErrorMessageEnum::TS_ALREADY_EXIST->value : null;
+
+        return new CheckTimesheetResponse($exists, $message);
     }
 }

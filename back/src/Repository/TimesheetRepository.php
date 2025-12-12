@@ -6,6 +6,7 @@ use App\Entity\Timesheet;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Ramsey\Uuid\Type\Time;
 
 /**
  * @extends ServiceEntityRepository<Timesheet>
@@ -30,4 +31,17 @@ class TimesheetRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getSingleScalarResult() > 0;
     }
+
+    public function findOneByEmployee(string $employeeUuid, string $timesheetUuid): ?Timesheet
+    {
+        return $this->createQueryBuilder('t')
+                ->join('t.employee', 'e')
+                ->andWhere('e.uuid = :employeeUuid')
+                ->andWhere('t.uuid = :timesheetUuid')
+                ->setParameter('employeeUuid', $employeeUuid)
+                ->setParameter('timesheetUuid', $timesheetUuid)
+                ->getQuery()
+                ->getOneOrNullResult();
+    }
+
 }

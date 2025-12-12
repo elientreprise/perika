@@ -3,6 +3,7 @@
 namespace App\Dto\Response\Timesheet;
 
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Uid\Uuid;
 
 class TimesheetCreatedResponse
 {
@@ -11,6 +12,10 @@ class TimesheetCreatedResponse
         public string $message,
         #[Groups(['timesheet:read'])]
         public bool $preventEditing,
+        #[Groups(['timesheet:read'])]
+        public Uuid $uuid,
+        #[Groups(['timesheet:read'])]
+        public Uuid $employeeUuid,
     ) {
     }
 }

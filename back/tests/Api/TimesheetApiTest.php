@@ -230,6 +230,7 @@ class TimesheetApiTest extends ApiTestCase
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
             'exists' => true,
+            'message' => ErrorMessageEnum::TS_ALREADY_EXIST->value
         ]);
     }
 
@@ -251,10 +252,14 @@ class TimesheetApiTest extends ApiTestCase
 
         $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
 
+        $content = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
             'message' => SuccessMessageEnum::TS_SUBMITTED->value,
             'preventEditing' => true,
+            'uuid' => $content['uuid'] ?? '',
+            'employeeUuid' => $content['employeeUuid'] ?? '',
         ]);
     }
 
@@ -833,7 +838,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => self::$user,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'. self::$user->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         $data = $response->toArray();
 
@@ -858,7 +863,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -887,7 +892,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         $data = $response->toArray();
 

@@ -105,7 +105,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ApiProperty(identifier: true)]
-    #[Groups(['employee:read', 'link-employee:read'])]
+    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read'])]
     private Uuid $uuid;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
@@ -120,12 +120,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read'])]
     #[Assert\NotBlank(message: 'The firstName are required', groups: ['edit'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read'])]
     #[Assert\NotBlank(message: 'The lastName are required', groups: ['edit'])]
     private ?string $lastName = null;
 
@@ -134,7 +134,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'The position are required', groups: ['edit'])]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read'])]
     private ?string $position = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
@@ -144,7 +144,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Assert\NotBlank(message: 'The hire date are required', groups: ['edit'])]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read'])]
     private ?\DateTimeImmutable $hireDate = null;
 
     #[ORM\Column]
@@ -161,7 +161,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $birthDate = null;
 
     #[ORM\ManyToOne(targetEntity: self::class)]
-    #[Groups(['employee:read'])]
+    #[Groups(['employee:read', 'timesheet:item:read'])]
     private ?User $manager = null;
 
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'manager')]
@@ -388,17 +388,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->subordinates->remove($employee);
     }
 
-    #[Groups(['employee:read', 'link-employee:read'])]
+    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read'])]
     /**
      * @return string
      *                Concat firstname and lastname
      */
     public function getFullName(): string
     {
-        return sprintf('%s %s', $this->firstName, $this->lastName);
+        return sprintf('%s %s', ucfirst($this->firstName), ucfirst($this->lastName));
     }
 
-    #[Groups(['employee:read'])]
+    #[Groups(['employee:read', 'timesheet:item:read'])]
     /**
      * @return string
      *                Return seniority calculated between hireDate and now

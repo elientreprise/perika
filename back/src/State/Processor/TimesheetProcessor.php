@@ -48,11 +48,14 @@ readonly class TimesheetProcessor implements ProcessorInterface
             ->setEndPeriod($end)
         ;
 
-        $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        /** @var Timesheet $timesheet */
+        $timesheet = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
         return new JsonResponse(new TimesheetCreatedResponse(
             message: SuccessMessageEnum::TS_SUBMITTED->value,
             preventEditing: true,
+            uuid: $timesheet->getUuid(),
+            employeeUuid: $timesheet->getEmployee()?->getUuid()
         ));
     }
 

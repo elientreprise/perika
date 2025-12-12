@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
@@ -18,6 +17,7 @@ use App\Repository\TimesheetRepository;
 use App\State\Processor\CheckTimesheetExistsProcessor;
 use App\State\Processor\TimesheetCalculatePeriodProcessor;
 use App\State\Processor\TimesheetProcessor;
+use App\State\Provider\EmployeeTimesheetProvider;
 use App\Validator\NoTimesheetOverlap;
 use App\Validator\ValidStartEndDate;
 use App\Validator\ValidTimesheet;
@@ -61,6 +61,16 @@ use Symfony\Component\Validator\Constraints as Assert;
             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
             security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)"
         ),
+        new Get(
+            uriTemplate: '/employees/{employeeUuid}/timesheets/{uuid}',
+            uriVariables: [
+                'employeeUuid' => 'employeeUuid',
+                'uuid' => 'uuid'
+            ],
+            normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+            security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)",
+            provider: EmployeeTimesheetProvider::class
+        ),
         new GetCollection(
              uriTemplate: '/employees/{employeeUuid}/timesheets',
              uriVariables: [
@@ -71,7 +81,6 @@ use Symfony\Component\Validator\Constraints as Assert;
                  ),
              ],
              normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
-             itemUriTemplate: '/employees/{employeeId}/timesheets/{uuid}'
         )
     ],
     normalizationContext: ['groups' => ['timesheet:read']],
@@ -96,7 +105,7 @@ class Timesheet
 
     #[ORM\ManyToOne(inversedBy: 'timesheets')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['timesheet:read', 'timesheet:write'])]
+    #[Groups(['timesheet:read', 'timesheet:write', 'timesheet:item:read'])]
     #[Assert\NotBlank()]
     private ?User $employee = null;
 
