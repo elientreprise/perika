@@ -1,4 +1,4 @@
-import {useState, useCallback, useMemo, useEffect} from "react";
+import {useState, useCallback, useEffect} from "react";
 import type {RowDescriptor} from "../types/RowDescriptor.ts";
 import type {ColumnDescriptor} from "../types/ColumnDescriptor.ts";
 import type {EntriesTable} from "../types/EntriesTable.ts";
@@ -32,7 +32,6 @@ export function useTableData({ rows, columns, initialData }: UseTableDataOptions
 
     const handleChange = useCallback((rowKey: string, colKey: string, value: any) => {
         setData((prev) => {
-
             const updatedRow = { ...prev[rowKey], [colKey]: value };
             updatedRow.total = dayColumns.reduce(
                 (sum, d) => roundFloat(sum + (updatedRow[d.key] || 0)),
@@ -41,7 +40,7 @@ export function useTableData({ rows, columns, initialData }: UseTableDataOptions
 
             return { ...prev, [rowKey]: updatedRow };
         });
-    }, [dayColumns]);
+    }, []);
 
 
     const setTableData = useCallback((newData: EntriesTable | ((prev: EntriesTable) => EntriesTable)) => {

@@ -16,7 +16,7 @@ export const rowRenderers = {
             <select
                 value={value}
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
-                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
+                className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -40,7 +40,7 @@ export const rowRenderers = {
             <select
                 value={value}
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
-                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
+                className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -64,7 +64,7 @@ export const rowRenderers = {
             <select
                 value={value}
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
-                className={`rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
+                className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
                 <option></option>
                 <option value={"true"}>OUI</option>
@@ -88,7 +88,7 @@ export const rowRenderers = {
             <select
                 value={value}
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
-                className={` rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
+                className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
                 <option value={""}></option>
                 <option value={"entreprise"}>Entreprise</option>
@@ -116,7 +116,7 @@ export const rowRenderers = {
             <select
                 value={value}
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
-                className={` rounded p-2 cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "border-error" : ""}`}
+                className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
                 <option value={""}></option>
                 <option value={"entreprise"}>Entreprise</option>

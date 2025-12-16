@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\TimestampableTrait;
 use App\Entity\ValueObject\Location;
 use App\Enum\Entity\WeekDayEnum;
 use App\Repository\TimesheetWorkDayRepository;
@@ -14,6 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ValidWorkdays]
 class TimesheetWorkDay
 {
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -56,6 +59,8 @@ class TimesheetWorkDay
     public function __construct()
     {
         $this->location = new Location();
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): int

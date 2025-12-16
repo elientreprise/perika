@@ -27,10 +27,11 @@ export default function Step2DetailsView({
                                              locationTable,
                                              leavesTable,
                                              errors,
-                                             readonly
+                                             readonly,
                                          }: Readonly<Props>) {
     return (
-        <div className="w-full space-y-6">
+        <div className="w-full gap-5 flex-col flex">
+
             <h3 className="text-xl font-semibold">Heures projet</h3>
             <Table
                 columns={columnsWithProject}
@@ -53,7 +54,7 @@ export default function Step2DetailsView({
                     {
                         key: "total-internal",
                         label: "Total absences",
-                        render: ({ colKey }) => {
+                        render: ({colKey}) => {
                             const total = rowsLeaves.reduce((sum, row) => {
                                 const value = leavesTable.data[row.key]?.[colKey];
                                 return sum + (typeof value === "number" ? value : 0);
@@ -64,7 +65,7 @@ export default function Step2DetailsView({
                     {
                         key: "total-global",
                         label: "Total global",
-                        render: ({ colKey }) => {
+                        render: ({colKey}) => {
                             const projectValue = projectTable.data.projectRow?.[colKey] || 0;
                             const hoursTotal = rowsLeaves.reduce((sum, row) => {
                                 const value = leavesTable.data[row.key]?.[colKey];
@@ -100,8 +101,9 @@ export default function Step2DetailsView({
 
             {current && (
                 <div className="flex gap-3 mt-4">
-                    <button onClick={onPrevious} className="px-4 py-2 border border-error text-white rounded">Retour</button>
-                    <button onClick={onSubmit} className="px-4 py-2 bg-primary text-white rounded">Soumettre</button>
+                    <button onClick={onPrevious} className="px-4 py-2 border border-error rounded text-xs">Retour
+                    </button>
+                    <button onClick={onSubmit} className="px-4 py-2 bg-primary rounded text-xs">Soumettre</button>
                 </div>
             )}
         </div>

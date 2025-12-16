@@ -27,11 +27,18 @@ export const TimesheetEmployeeSchema: z.ZodType<any> = z.lazy(() =>
             (v) => (typeof v === "string" || v instanceof Date ? new Date(v) : v),
             z.date()
         ).nullable(),
-        manager: UserSchema.nullable(),
+        manager: TimesheetEmployeeSchema.nullable(),
         fullName: z.string().nullable(),
         seniority: z.string().nullable(),
     })
 );
+
+export const CommentSchema = z.object({
+    comment: z.string(),
+    propertyPath: z.string().nullable(),
+    createdBy: TimesheetEmployeeSchema,
+    createdAt: z.string(),
+});
 
 export const TimesheetSchema = z.object({
     uuid: z.string().nullable(),
@@ -39,8 +46,12 @@ export const TimesheetSchema = z.object({
     startPeriod: z.string(),
     endPeriod: z.string(),
     workDays: z.array(WorkDaySchema),
+    comments: z.array(CommentSchema),
+    status: z.string()
 });
 
+
+export type CommentType = z.infer<typeof CommentSchema>;
 export type TimesheetEmployeeType = z.infer<typeof TimesheetEmployeeSchema>;
 export type LocationType = z.infer<typeof LocationSchema>;
 export type WorkDayType = z.infer<typeof WorkDaySchema>;

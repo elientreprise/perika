@@ -109,9 +109,8 @@ export default function Step1PeriodContainer({
             update({
                 employee: employeeIri,
                 startPeriod,
-                endPeriod
+                endPeriod,
             });
-
             onNext();
         } catch (error) {
             push("Une erreur est survenue lors de la validation", 'error');

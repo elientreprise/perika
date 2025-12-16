@@ -6,8 +6,6 @@ type Props = {
 export default function Step1PeriodResume({
                                             timesheet
                                           }: Readonly<Props>) {
-
-
     return (
 
            <div>

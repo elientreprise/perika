@@ -27,6 +27,7 @@ function createEmptyTimesheet(): TimesheetType {
         startPeriod: "",
         endPeriod: "",
         workDays,
+        comments: []
     };
 }
 

@@ -2,9 +2,6 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
@@ -12,11 +9,13 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\QueryParameter;
+use ApiPlatform\Metadata\Put;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
 use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
+use App\Entity\Trait\TimestampableTrait;
+use App\Enum\Entity\TimesheetStatusEnum;
 use App\Enum\PermissionEnum;
 use App\Filter\TimesheetSearchFilter;
 use App\Repository\TimesheetRepository;
@@ -94,7 +93,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             // todo: filter seulement par le manager
         )
     ],
-    normalizationContext: ['groups' => ['timesheet:read']],
+    normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
     denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
     validationContext: ['groups' => 'Default', 'create', 'edit']
 )]
@@ -109,6 +108,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 ])]
 class Timesheet
 {
+
+    use TimestampableTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -146,10 +148,24 @@ class Timesheet
     #[Groups(['timesheet:item:read'])]
     private float $totalTime = 0;
 
+    #[ORM\Column(enumType: TimesheetStatusEnum::class, options: ['default' => TimesheetStatusEnum::DRAFT])]
+    #[Groups(['timesheet:item:read'])]
+    private ?TimesheetStatusEnum $status = TimesheetStatusEnum::DRAFT;
+
+    /**
+     * @var Collection<int, TimesheetComment>
+     */
+    #[Groups(['timesheet:write', 'timesheet:read'])]
+    #[ORM\OneToMany(targetEntity: TimesheetComment::class, mappedBy: 'timesheet', cascade: ['persist'])]
+    private Collection $comments;
+
     public function __construct()
     {
         $this->uuid = Uuid::v4();
         $this->workDays = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): int
@@ -256,5 +272,54 @@ class Timesheet
         }
 
         return $total;
+    }
+
+    public function getStatus(): ?TimesheetStatusEnum
+    {
+        return $this->status;
+    }
+
+    public function setStatus(TimesheetStatusEnum $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TimesheetComment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(TimesheetComment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setTimesheet($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(TimesheetComment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getTimesheet() === $this) {
+                $comment->setTimesheet(null);
+            }
+        }
+
+        return $this;
+    }
+
+    #[Groups(['timesheet:item:read'])]
+    public function getThreeLastComments(): Collection
+    {
+        $length = $this->comments->count();
+        return $length > 3 ? new ArrayCollection($this->comments->slice($length, 3)) : $this->comments;
     }
 }

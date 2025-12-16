@@ -33,10 +33,10 @@ export default function SearchableSelect({
     const selectedLabel = options.find((opt) => opt.value === value)?.label;
 
     return (
-        <div className={`relative w-full ${className}`}>
+        <div className={`relative w-full ${className} text-xs`}>
 
             <div
-                className={`${!readonly ? 'border rounded p-2 cursor-pointer flex justify-between items-center' : ''} ${error ? "border-error" : ""}`}
+                className={`${!readonly ? 'text-xs rounded cursor-pointer flex justify-between items-center' : ''} ${error ? "text-error" : ""}`}
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {!readonly ? (
@@ -55,9 +55,9 @@ export default function SearchableSelect({
 
                     <input
                         type="text"
-                        className={`w-full p-2 border-b outline-none ${error ? "border-error" : ""}`}
+                        className={`w-full p-2 border-b outline-none text-xs ${error ? "text-error" : ""}`}
                         placeholder="Rechercher..."
-                        value={query || search}
+                        value={value || search}
                         onChange={(e) => setQuery ? setQuery(e.target.value) : setSearch(e.target.value)}
                         {...rest}
                     />
@@ -65,14 +65,14 @@ export default function SearchableSelect({
                     <ul>
                         {
                             loading ? (
-                                <li className="flex justify-center p-3">
+                                <li className="flex justify-center text-xs p-3">
                                     <LoaderButton />
                                 </li>
                                 ) : filteredOptions.length > 0 ? (
                             filteredOptions.map((opt) => (
                                 <li
                                     key={opt.value}
-                                    className="p-2 cursor-pointer hover:bg-gray-100"
+                                    className="p-2 text-xs cursor-pointer hover:bg-gray-100"
                                     onClick={() => {
                                         onChange?.(opt.value);
                                         setIsOpen(false);
@@ -83,7 +83,7 @@ export default function SearchableSelect({
                                 </li>
                             ))
                             ) : (
-                                <li className="p-2 text-gray-400">Aucune option</li>
+                                <li className="p-2 text-xs text-gray-400">Aucune option</li>
                             )
                         }
                     </ul>

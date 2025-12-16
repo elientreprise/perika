@@ -22,4 +22,6 @@ enum ErrorMessageEnum: string
     case TS_START_PERIOD_LESS_THAN_END_PERIOD = 'La date de début doit être inférieure à la date de fin.';
     case TS_END_PERIOD_GREATER_THAN_START_PERIOD = 'La date de fin doit être supérieur à la date de début.';
     case TS_EDITION_NOT_AUTHORIZED = 'Vous n\'êtes pas autorisé à modifier cette feuille de temps.';
+
+    case TS_COMMENT_ADD_NOT_AUTHORIZED = 'Vous n\'êtes pas autorisé à ajouter un commentaire sur cette feuille de temps.';
 }

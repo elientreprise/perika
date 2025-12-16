@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\Response\Timesheet\TimesheetCreatedResponse;
 use App\Entity\Timesheet;
+use App\Entity\TimesheetComment;
 use App\Entity\User;
 use App\Enum\PermissionEnum;
 use App\Enum\ResponseMessage\SuccessMessageEnum;
@@ -41,12 +42,18 @@ readonly class TimesheetProcessor implements ProcessorInterface
             throw new AccessDeniedHttpException($this->getVoterReason(TimesheetVoter::class));
         }
 
+        $user = $this->security->getUser();
+
         [$start, $end] = $this->timesheetService->timesheetPeriodCalculator($data->getEndPeriod());
 
         $data
             ->setStartPeriod($start)
             ->setEndPeriod($end)
         ;
+
+        $data->getComments()->map(function(TimesheetComment $comment) use ($user) {
+            return $comment->setCreatedBy($user);
+        });
 
         /** @var Timesheet $timesheet */
         $timesheet = $this->persistProcessor->process($data, $operation, $uriVariables, $context);

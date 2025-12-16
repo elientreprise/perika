@@ -1,6 +1,7 @@
 import {useTimesheet} from "../../../hooks/useTimesheet.ts";
 import TimesheetResumeView from "./TimesheetResumeView.tsx";
 import {NotFound} from "../../../../../shared/components/ui/NotFound.tsx";
+import {useState} from "react";
 
 type Props = {
     employeeUuid: string;
@@ -13,12 +14,27 @@ export default function TimesheetResumeContainer({
 
     const { timesheet, notFound } = useTimesheet(employeeUuid || '-',  timesheetUuid || '-');
 
+    const [comment, setComment] = useState<string>( "");
+
+    const [displayComment, setDisplayComment] = useState<boolean>( false);
+
+    function handleDisplayComment() {
+        setDisplayComment(!displayComment)
+    }
+
     if (notFound) {
         return (<NotFound/>)
     }
 
     if (timesheet) {
-        return (<TimesheetResumeView timesheet={timesheet}/>);
+        return (<TimesheetResumeView
+            timesheet={timesheet}
+            handleDisplayComment={handleDisplayComment}
+            comment={comment}
+            setComment={setComment}
+            displayComment={displayComment}
+            setDisplayComment={setDisplayComment}
+        />);
     }
 
 

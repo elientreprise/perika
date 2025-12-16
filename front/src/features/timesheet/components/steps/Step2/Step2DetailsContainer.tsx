@@ -57,7 +57,7 @@ export default function Step2DetailsContainer({
         });
 
         update({ workDays: updatedWorkDays });
-
+        
         try {
             const response = await create(useTimesheetStore.getState().timesheet);
             push("Timesheet créé avec succès !", "success");

@@ -12,6 +12,7 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\CheckAuthAction;
 use App\Dto\Response\LinkEmployeeResponse;
+use App\Entity\Trait\TimestampableTrait;
 use App\Enum\Entity\CoreUserRoleEnum;
 use App\Enum\PermissionEnum;
 use App\Repository\UserRepository;
@@ -94,6 +95,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use TimestampableTrait;
+
     // todo remplacer par une propriété dans l'entité contract
     public const float MAX_TOTAL_TIME_PROJECT = 37;
 
@@ -192,6 +195,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isActive = true;
         $this->subordinates = new ArrayCollection();
         $this->timesheets = new ArrayCollection();
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int

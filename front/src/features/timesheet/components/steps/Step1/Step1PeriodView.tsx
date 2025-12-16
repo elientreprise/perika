@@ -1,6 +1,7 @@
 import SearchableSelect from "../../../../../shared/components/ui/SearchableSelect.tsx";
 import DateInput from "../../../../../shared/components/ui/DateInput.tsx";
 import {LoaderButton} from "../../../../../shared/components/ui/LoaderButton.tsx";
+import TimesheetCommentForm from "../../comment/Form/TimesheetCommentForm.tsx";
 
 
 type Step1PeriodViewProps = {
@@ -36,10 +37,8 @@ export function Step1PeriodView({
     const isDisabled = isLoading || exists;
 
     return (
-        <div className={current ? "h-[200px]" : ""}>
+        <div className={"w-1/2"}>
             <h3 className="text-xl font-semibold mb-4">Période</h3>
-
-
             <SearchableSelect
                 options={[
                     { label: "Néo WAGNER", value: "db9de620-4f56-45d8-8a74-ca0cdd88f42a" },
@@ -49,12 +48,13 @@ export function Step1PeriodView({
                 onChange={(value) => onEmployeeChange(value)}
                 placeholder="Recherchez un utilisateur"
                 error={!!errorEmployee}
+                className={"border p-1 rounded"}
             />
             {errorEmployee && (
                 <p className="text-red-500 mt-2">{errorEmployee}</p>
             )}
 
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 mt-4 text-xs">
                 {startPeriod && (
                     <DateInput
                         label="Début de période"
@@ -86,7 +86,7 @@ export function Step1PeriodView({
                 {current && (
                     <button
                         type="button"
-                        className="mt-4 px-4 py-2 bg-primary text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="text-xs mt-4 px-4 py-2 bg-primary text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         disabled={isDisabled}
                         onClick={onValidate}
                     >

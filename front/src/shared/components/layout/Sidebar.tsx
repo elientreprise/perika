@@ -1,6 +1,16 @@
 import {CollapseMenu} from "../ui/CollapseMenu.tsx";
+import {useEffect, useState} from "react";
+import {toBool} from "../../utils/ToBool.ts";
 
 export default function Sidebar() {
+    const saveTheme = toBool(localStorage.getItem('theme'));
+
+    const [theme, setTheme] = useState<boolean>(saveTheme);
+
+    useEffect(() => {
+        localStorage.setItem('theme', theme.toString());
+        document.documentElement.dataset.theme = theme ? "night" : "light";
+    }, [theme]);
 
     const rhMenuData = [
         {
@@ -45,6 +55,8 @@ export default function Sidebar() {
                 <CollapseMenu items={rhMenuData} defaultOpen={false}/>
                 <CollapseMenu items={financeMenuData} defaultOpen={false}/>
             </ul>
+
+            <input type="checkbox" checked={theme} onChange={(event) => setTheme(event.target.checked)} className="toggle"/>
         </aside>
     );
 }

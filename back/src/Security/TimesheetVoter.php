@@ -40,6 +40,7 @@ class TimesheetVoter extends Voter
             PermissionEnum::CAN_CREATE_TIMESHEET->value => $this->canCreate($timesheet, $user, $vote),
             PermissionEnum::CAN_VIEW_TIMESHEET->value => $this->canView($timesheet, $user, $vote),
             PermissionEnum::CAN_EDIT_TIMESHEET->value => $this->canEdit($timesheet, $user, $vote),
+            PermissionEnum::CAN_VIEW_TIMESHEET_COMMENT_COLLECTION->value => $this->canViewCommentCollection($timesheet, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
@@ -85,6 +86,17 @@ class TimesheetVoter extends Voter
                 $user->getUserIdentifier()
             ));
 
+            return false;
+        }
+
+        return true;
+    }
+
+    private function canViewCommentCollection(Timesheet $timesheet, User $user, ?Vote $vote): bool
+    {
+        if (
+            !$this->canView($timesheet, $user, $vote)
+        ) {
             return false;
         }
 

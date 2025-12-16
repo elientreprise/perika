@@ -12,6 +12,9 @@ enum PermissionEnum: string
     case CAN_VIEW_TIMESHEET_COLLECTION = 'can_view_timesheet_collection';
     case CAN_EDIT_TIMESHEET = 'can_edit_timesheet';
 
+    case CAN_ADD_TIMESHEET_COMMENT = 'can_add_timesheet_comment';
+    case CAN_VIEW_TIMESHEET_COMMENT_COLLECTION = 'can_view_timesheet_comment_collection';
+
     public static function values(): array
     {
         return array_column(self::cases(), 'value');
