@@ -2,17 +2,23 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExactFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\QueryParameter;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
 use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
 use App\Enum\PermissionEnum;
+use App\Filter\TimesheetSearchFilter;
 use App\Repository\TimesheetRepository;
 use App\State\Processor\CheckTimesheetExistsProcessor;
 use App\State\Processor\TimesheetCalculatePeriodProcessor;
@@ -73,14 +79,19 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new GetCollection(
              uriTemplate: '/employees/{employeeUuid}/timesheets',
-             uriVariables: [
-                 'employeeUuid' => new Link(
-                     toProperty: 'employee',
-                     fromClass: User::class,
-                     security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET_COLLECTION->value."', employee)"
-                 ),
-             ],
-             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+            uriVariables: [
+                'employeeUuid' => new Link(
+                    toProperty: 'employee',
+                    fromClass: User::class,
+                    security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET_COLLECTION->value."', employee)"
+                ),
+            ],
+            normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+        ),
+        new GetCollection(
+            uriTemplate: '/timesheets',
+            normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
+            // todo: filter seulement par le manager
         )
     ],
     normalizationContext: ['groups' => ['timesheet:read']],
@@ -90,6 +101,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ValidStartEndDate]
 #[ValidTimesheet]
 #[NoTimesheetOverlap]
+#[ApiFilter(TimesheetSearchFilter::class, properties: [
+    'uuid',
+    'startPeriod',
+    'endPeriod',
+    'status',
+])]
 class Timesheet
 {
     #[ORM\Id]

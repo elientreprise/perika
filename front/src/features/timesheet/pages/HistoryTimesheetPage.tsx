@@ -5,7 +5,7 @@ export default function HistoryTimesheetPage() {
 
 
     return (
-        <section className={`space-y-4 w-full pointer-events-none`}>
+        <section className={`space-y-4 w-full`}>
            <TimesheetHistory />
         </section>
     );

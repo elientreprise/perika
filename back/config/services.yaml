@@ -19,3 +19,7 @@ services:
             $globalFactory: '@limiter.ip_login'
             $localFactory: '@limiter.username_ip_login'
             $secret: '%kernel.secret%'
+
+    App\Filter\TimesheetSearchFilter:
+        tags:
+        - { name: 'api_platform.filter', id: 'timesheet.search_filter' }

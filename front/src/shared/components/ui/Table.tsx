@@ -40,10 +40,10 @@ export default function Table({
     };
 
     return (
-        <table className={className ?? "w-full border-collapse border table table-xs"}>
+        <table className={className ?? "w-full table table-xs overflow-x-auto"}>
             <thead>
             <tr>
-                <th className="border p-2 text-xs"></th>
+                <th className=" p-2 text-xs"></th>
                 {columns.map((col) => (
                     <th key={col.key} className="border p-2 text-xs text-center opacity-90">
                         {col.label}

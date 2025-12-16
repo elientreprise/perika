@@ -7,6 +7,8 @@ import type {TimesheetType} from "../types/TimesheetType.ts";
 import type {TimesheetCreateResponse} from "../types/TimesheetCreateResponse.ts";
 import {get, post} from "../../../app/services/api.ts";
 import type {TimesheetPayloadType} from "../types/TimesheetPayload.ts";
+import {API_URL} from "../../../app/config/api.tsx";
+import type {TimesheetSearchParameters} from "../types/TimesheetSearchParameters.ts";
 
 
 export async function calculatePeriod(data: CalculatePeriodPayload ): Promise<CalculatePeriodResponse> {
@@ -26,4 +28,22 @@ export async function getTimesheetByUuid(uuid: string ): Promise<TimesheetType> 
 
 export async function getTimesheetByEmployee(employeeUuid: string, timesheetUuid: string ): Promise<TimesheetType> {
     return get<TimesheetType>(`/employees/${employeeUuid}/timesheets/${timesheetUuid}`);
+}
+
+
+
+export async function searchTimesheets(employeeUuid, parameters: TimesheetSearchParameters = {}): Promise<TimesheetType[]> {
+
+
+    const url = employeeUuid ? new URL(`${API_URL}/employees/${employeeUuid}/timesheets`) : new URL(`${API_URL}/timesheets`);
+
+    for (const [key, value] of Object.entries(parameters)) {
+        if (value !== undefined && value !== null && value !== "" && key !== 'employee') {
+            url.searchParams.append(key, String(value));
+        }
+    }
+
+    const response = await get(url.toString());
+
+    return response.member || response.data;
 }

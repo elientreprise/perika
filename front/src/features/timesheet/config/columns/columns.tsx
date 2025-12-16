@@ -2,7 +2,6 @@
 import {columnRenderers} from "./renderers.tsx";
 import type {ColumnDescriptor} from "../../../../shared/types/ColumnDescriptor.ts";
 import {DaysOfWeek} from "../../../../shared/types/DaysOfWeekType.ts";
-import {useMemo} from "react";
 
 
 export const dayColumns: ColumnDescriptor[] = DaysOfWeek.map((day) => ({

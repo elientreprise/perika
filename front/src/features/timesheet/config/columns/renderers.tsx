@@ -18,4 +18,5 @@ export const columnRenderers = {
     ),
 
     total: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => <strong>{value}</strong>,
+
 };

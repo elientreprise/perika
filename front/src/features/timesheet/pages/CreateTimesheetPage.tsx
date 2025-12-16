@@ -8,7 +8,7 @@ export default function CreateTimesheetPage() {
     const { step, next, previous, timesheet } = useTimesheetStore();
 
     return (
-        <section className={`space-y-4 w-1/2`}>
+        <section className={`space-y-4 w-1/2 p-10`}>
 
             {step === 1 ? (
                 <Step1Period

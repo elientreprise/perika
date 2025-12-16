@@ -4,72 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8125a841-15e0-465e-8749-b317f0072d3f" name="Changes" comment="feat(timesheet): implement validator + security, build business logic">
-      <change afterPath="$PROJECT_DIR$/back/.php-cs-fixer.cache" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/.php-cs-fixer.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/composer.lock" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/phpstan.neon" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Dto/Input/CalculatePeriodInput.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Dto/Input/CheckTimesheetInput.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Dto/Response/Timesheet/CheckTimesheetResponse.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Dto/Response/Timesheet/TimesheetCalculatePeriodResponse.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Dto/Response/Timesheet/TimesheetCreatedResponse.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Enum/Entity/CoreUserRoleEnum.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/EventListener/TimesheetListener.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Factory/TimesheetFactory.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Factory/TimesheetWorkDayFactory.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Factory/UserFactory.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Security/TimesheetVoter.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Service/TimesheetService.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/State/Processor/CheckTimesheetExistsProcessor.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/State/Processor/TimesheetCalculatePeriodProcessor.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/State/Processor/TimesheetProcessor.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Story/DefaultUseCaseStory.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/NoTimesheetOverlap.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/NoTimesheetOverlapValidator.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidStartEndDate.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidStartEndDateValidator.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidTimesheet.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidTimesheetValidator.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidWorkdays.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/src/Validator/ValidWorkdaysValidator.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Entity/TimesheetTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Repository/TimesheetRepositoryTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Service/TimesheetServiceTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Validator/NoTimesheetOverlapValidatorTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Validator/ValidStartEndDateValidatorTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Validator/ValidTimesheetValidatorTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tests/Validator/ValidWorkdaysValidatorTest.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/back/tools/run-csfixer.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_19_11_2025_14_23_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_19_11_2025_14_23__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_19_11_2025_14_24_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_19_11_2025_14_24__Changes_.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/watcherTasks.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
+    <list default="true" id="8125a841-15e0-465e-8749-b317f0072d3f" name="Changes" comment="feat(timesheet)(front): create first view for create and view timesheet.">
+      <change afterPath="$PROJECT_DIR$/back/src/Filter/TimesheetSearchFilter.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/features/timesheet/hooks/useSearchTimesheets.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/features/timesheet/types/TimesheetSearchParameters.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/shared/components/ui/SearchDateInput.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/shared/components/ui/SearchInput.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/shared/hooks/useSearchParams.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/shared/types/SearchDateInputProps.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/front/src/shared/types/SearchInputProps.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/back/composer.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/config/packages/doctrine.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/back/config/packages/doctrine.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/config/packages/security.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/back/config/packages/security.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/migrations/Version20251113090426.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/DataFixtures/AppFixtures.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/DataFixtures/AppFixtures.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/DataFixtures/UserFixtures.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/back/config/services.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/back/config/services.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back/src/Entity/Timesheet.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Entity/Timesheet.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Entity/TimesheetWorkDay.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Entity/TimesheetWorkDay.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Entity/User.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Entity/User.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Entity/ValueObject/Location.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Entity/ValueObject/Location.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Enum/PermissionEnum.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Enum/PermissionEnum.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Enum/ResponseMessage/ErrorMessageEnum.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Enum/ResponseMessage/ErrorMessageEnum.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/EventSubscriber/ApiExceptionSubscriber.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Repository/TimesheetRepository.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Repository/TimesheetRepository.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Repository/TimesheetWorkDayRepository.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Repository/TimesheetWorkDayRepository.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/Security/EmployeeVoter.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/Security/EmployeeVoter.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/State/LinkEmployeeProcessor.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/State/Processor/LinkEmployeeProcessor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/src/State/MeProvider.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/src/State/Provider/MeProvider.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/symfony.lock" beforeDir="false" afterPath="$PROJECT_DIR$/back/symfony.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/tests/Api/ManagerApiTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/tests/Api/ManagerApiTest.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/tests/Api/TimesheetApiTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/tests/Api/TimesheetApiTest.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/back/tests/Api/UserApiTest.php" beforeDir="false" afterPath="$PROJECT_DIR$/back/tests/Api/UserApiTest.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/front/src/types/UserType.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/types/UserType.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/components/history/TimesheetHistoryContainer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/components/history/TimesheetHistoryContainer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/components/history/TimesheetHistoryView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/components/history/TimesheetHistoryView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/config/columns/columns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/config/columns/columns.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/config/columns/renderers.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/config/columns/renderers.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/pages/CreateTimesheetPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/pages/CreateTimesheetPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/pages/HistoryTimesheetPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/pages/HistoryTimesheetPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/features/timesheet/services/timesheet.ts" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/features/timesheet/services/timesheet.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/shared/components/layout/DashboardLayout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/shared/components/layout/DashboardLayout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/front/src/shared/components/ui/Table.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/front/src/shared/components/ui/Table.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,6 +45,11 @@
       <list>
         <option value="TypeScript JSX File" />
         <option value="Doctrine Entity ServiceRepository" />
+        <option value="com.intellij.reactbuddy.palette" />
+        <option value="com.intellij.reactbuddy.previews" />
+        <option value="com.intellij.reactbuddy.index" />
+        <option value="com.intellij.reactbuddy.useInitial" />
+        <option value="com.intellij.reactbuddy.README" />
       </list>
     </option>
   </component>
@@ -425,13 +385,15 @@
     </include_path>
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="35NYQssb6om0cdZqLrclwkXgUTG" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -447,13 +409,14 @@
     "credentialsType com.jetbrains.php.remote.interpreter.ui.PhpCreateRemoteSdkForm": "Docker",
     "credentialsType com.jetbrains.php.remote.interpreter.ui.PhpInplaceEditRemoteSdkForm": "Docker",
     "git-widget-placeholder": "3-mvp-timesheet",
-    "last_opened_file_path": "C:/Users/neo.wagner/Desktop/www/eli/perika/back/tools",
+    "last_opened_file_path": "C:/Users/neo.wagner/Desktop/www/eli/perika/front/src/features/timesheet/hooks",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "php.override.implement.member.chooser.php.doc": "DEFAULT",
+    "run.code.analysis.last.selected.profile": "pProject Default",
     "settings.editor.selected.configurable": "watcher.settings",
     "ts.external.directory.path": "C:\\Users\\neo.wagner\\Desktop\\www\\eli\\perika\\front\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
@@ -476,16 +439,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\back\tools" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\types\Auth" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\types\Component" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\pages" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\hooks" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\shared\types" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\shared\components\ui" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\components\history" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\pages" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\back\tests" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\components\Routes" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\components" />
-      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\src\Enum" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\shared\hooks" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\components" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\employee\types" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\components\steps\Resume" />
+      <recent name="C:\Users\neo.wagner\Desktop\www\eli\perika\front\src\features\timesheet\pages" />
     </key>
   </component>
   <component name="RunManager" selected="PHPUnit.TimesheetApiTest.testCheckTimesheetExist">
@@ -540,7 +505,10 @@
       <workItem from="1763110479984" duration="57627000" />
       <workItem from="1763547221142" duration="4228000" />
       <workItem from="1763559295685" duration="1330000" />
-      <workItem from="1763717044563" duration="81945000" />
+      <workItem from="1763717044563" duration="94061000" />
+      <workItem from="1764578996397" duration="98666000" />
+      <workItem from="1765270028740" duration="70537000" />
+      <workItem from="1765786172182" duration="23991000" />
     </task>
     <task id="LOCAL-00001" summary="config: edit captainhook actions for pre-commit">
       <option name="closed" value="true" />
@@ -638,7 +606,79 @@
       <option name="project" value="LOCAL" />
       <updated>1763650918403</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="feat(timesheet): implement validator + security, build business logic">
+      <option name="closed" value="true" />
+      <created>1764322712503</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764322712503</updated>
+    </task>
+    <task id="LOCAL-00014" summary="feat(timesheet): implement unit tests and integration tests">
+      <option name="closed" value="true" />
+      <created>1764322857563</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1764322857564</updated>
+    </task>
+    <task id="LOCAL-00015" summary="refacto(test): remove duplication code in TimesheetRepositoryTest.php">
+      <option name="closed" value="true" />
+      <created>1764324203125</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1764324203125</updated>
+    </task>
+    <task id="LOCAL-00016" summary="refacto(test): remove duplication code in TimesheetApiTest.php">
+      <option name="closed" value="true" />
+      <created>1764325284009</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1764325284009</updated>
+    </task>
+    <task id="LOCAL-00017" summary="feat(Timesheet): get timesheet collection by user and implement voter for security">
+      <option name="closed" value="true" />
+      <created>1764581422119</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1764581422119</updated>
+    </task>
+    <task id="LOCAL-00018" summary="feat(test): add test for get timesheets collection">
+      <option name="closed" value="true" />
+      <created>1764581456243</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1764581456243</updated>
+    </task>
+    <task id="LOCAL-00019" summary="fix(security): uncomment access control api route">
+      <option name="closed" value="true" />
+      <created>1764581788016</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1764581788016</updated>
+    </task>
+    <task id="LOCAL-00020" summary="feat(timesheet)(front): create first view for create and view timesheet.">
+      <option name="closed" value="true" />
+      <created>1765533855635</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1765533855635</updated>
+    </task>
+    <task id="LOCAL-00021" summary="feat(timesheet)(front): create first view for create and view timesheet.">
+      <option name="closed" value="true" />
+      <created>1765534012740</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1765534012740</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -669,7 +709,14 @@
     <MESSAGE value="refacto:test(timesheet): update test payload" />
     <MESSAGE value="feat(timesheet): create timesheet entity and related timesheet_workday entity" />
     <MESSAGE value="feat(timesheet): implement validator + security, build business logic" />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(timesheet): implement validator + security, build business logic" />
+    <MESSAGE value="feat(timesheet): implement unit tests and integration tests" />
+    <MESSAGE value="refacto(test): remove duplication code in TimesheetRepositoryTest.php" />
+    <MESSAGE value="refacto(test): remove duplication code in TimesheetApiTest.php" />
+    <MESSAGE value="feat(Timesheet): get timesheet collection by user and implement voter for security" />
+    <MESSAGE value="feat(test): add test for get timesheets collection" />
+    <MESSAGE value="fix(security): uncomment access control api route" />
+    <MESSAGE value="feat(timesheet)(front): create first view for create and view timesheet." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(timesheet)(front): create first view for create and view timesheet." />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
