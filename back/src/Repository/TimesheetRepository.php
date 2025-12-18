@@ -6,7 +6,6 @@ use App\Entity\Timesheet;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Ramsey\Uuid\Type\Time;
 
 /**
  * @extends ServiceEntityRepository<Timesheet>
@@ -43,5 +42,4 @@ class TimesheetRepository extends ServiceEntityRepository
                 ->getQuery()
                 ->getOneOrNullResult();
     }
-
 }

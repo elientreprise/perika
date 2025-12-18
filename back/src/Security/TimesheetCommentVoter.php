@@ -2,7 +2,6 @@
 
 namespace App\Security;
 
-use App\Entity\Timesheet;
 use App\Entity\TimesheetComment;
 use App\Entity\User;
 use App\Enum\PermissionEnum;

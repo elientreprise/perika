@@ -6,9 +6,11 @@ import type {CheckExistsPayload} from "../types/CheckExistsPayload.ts";
 import type {TimesheetType} from "../types/TimesheetType.ts";
 import type {TimesheetCreateResponse} from "../types/TimesheetCreateResponse.ts";
 import {get, post} from "../../../app/services/api.ts";
-import type {TimesheetPayloadType} from "../types/TimesheetPayload.ts";
+import type {CommentPayloadType, TimesheetPayloadType} from "../types/TimesheetPayload.ts";
 import {API_URL} from "../../../app/config/api.tsx";
 import type {TimesheetSearchParameters} from "../types/TimesheetSearchParameters.ts";
+import {CommentPayloadSchema} from "../types/TimesheetPayload.ts";
+import type {CommentCreateResponse} from "../types/CommentCreateResponse.ts";
 
 
 export async function calculatePeriod(data: CalculatePeriodPayload ): Promise<CalculatePeriodResponse> {
@@ -20,6 +22,10 @@ export async function timesheetCheckExist(data: CheckExistsPayload ): Promise<Ch
 }
 export async function create(data: TimesheetPayloadType ): Promise<TimesheetCreateResponse> {
     return post<TimesheetCreateResponse>("/timesheets", data);
+}
+
+export async function createComment(data: CommentPayloadType ): Promise<CommentCreateResponse> {
+    return post<CommentCreateResponse>("/timesheet-comments", data);
 }
 
 export async function getTimesheetByUuid(uuid: string ): Promise<TimesheetType> {

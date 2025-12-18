@@ -4,15 +4,13 @@ namespace App\State\Processor;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Dto\Entity\CommentCreatedByView;
+use App\Dto\Entity\TimesheetCommentView;
 use App\Dto\Response\Timesheet\TimesheetCommentAddedResponse;
-use App\Dto\Response\Timesheet\TimesheetCreatedResponse;
-use App\Entity\Timesheet;
 use App\Entity\TimesheetComment;
 use App\Entity\User;
 use App\Enum\PermissionEnum;
 use App\Enum\ResponseMessage\SuccessMessageEnum;
-use App\Security\TimesheetVoter;
-use App\Service\TimesheetService;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -53,8 +51,15 @@ readonly class TimesheetCommentsProcessor implements ProcessorInterface
 
         return new JsonResponse(new TimesheetCommentAddedResponse(
             message: SuccessMessageEnum::TS_COMMENT_ADDED->value,
-            uuid: $comment->getTimesheet()?->getUuid(),
-            employeeUuid: $comment->getCreatedBy()?->getUuid()
+            comment: new TimesheetCommentView(
+                uuid: $comment->getUuid(),
+                comment: $comment->getComment(),
+                createdBy: new CommentCreatedByView(
+                    uuid: $comment->getCreatedBy()?->getUuid(),
+                    fullName: $comment->getCreatedBy()?->getFullName()
+                ),
+                createdAt: $comment->getCreatedAt()->format('Y-m-d')
+            ),
         ));
     }
 }

@@ -33,21 +33,35 @@ export const TimesheetEmployeeSchema: z.ZodType<any> = z.lazy(() =>
     })
 );
 
+
+
+export const CommentEmployeeSchema: z.ZodType<any> = z.lazy(() =>
+    z.object({
+        uuid: z.uuid(),
+        fullName: z.string().nullable(),
+    })
+);
+
 export const CommentSchema = z.object({
     comment: z.string(),
     propertyPath: z.string().nullable(),
-    createdBy: TimesheetEmployeeSchema,
-    createdAt: z.string(),
+    createdBy: CommentEmployeeSchema,
+    translateStatus: z.string(),
+    formattedCreatedAt: z.string()
 });
 
 export const TimesheetSchema = z.object({
     uuid: z.string().nullable(),
     employee: TimesheetEmployeeSchema.nullable(),
-    startPeriod: z.string(),
+    formattedStartPeriod: z.string(),
+    formattedEndPeriod: z.string(),
     endPeriod: z.string(),
+    startPeriod: z.string(),
     workDays: z.array(WorkDaySchema),
     comments: z.array(CommentSchema),
-    status: z.string()
+    translateStatus: z.string(),
+    formattedCreatedAt: z.string()
+
 });
 
 

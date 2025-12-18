@@ -5,6 +5,7 @@ import {WorkDaySchema} from "./TimesheetType.ts";
 export const CommentPayloadSchema = z.object({
     comment: z.string(),
     propertyPath: z.string().nullable(),
+    timesheet: z.url().nullable()
 });
 
 export const TimesheetPayloadSchema = z.object({
@@ -19,3 +20,4 @@ export const TimesheetPayloadSchema = z.object({
 
 
 export type TimesheetPayloadType = z.infer<typeof TimesheetPayloadSchema>;
+export type CommentPayloadType = z.infer<typeof CommentPayloadSchema>;

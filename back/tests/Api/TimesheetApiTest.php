@@ -28,8 +28,6 @@ class TimesheetApiTest extends ApiTestCase
     private static Client $client;
     private static UserInterface $user;
 
-
-
     protected function setUp(): void
     {
         self::$alwaysBootKernel = true;
@@ -151,10 +149,6 @@ class TimesheetApiTest extends ApiTestCase
         ]);
     }
 
-    /**
-     * @param array $data
-     * @return void
-     */
     public function assertTimesheet(array $data): void
     {
         $this->assertSame('Timesheet', $data['@type']);
@@ -164,7 +158,6 @@ class TimesheetApiTest extends ApiTestCase
 
         $this->assertIsArray($data['workDays']);
         $this->assertCount(7, $data['workDays']);
-
 
         $monday = $data['workDays'][1];
 
@@ -191,7 +184,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheet(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2025-11-21',
         ]));
@@ -230,7 +222,7 @@ class TimesheetApiTest extends ApiTestCase
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
             'exists' => true,
-            'message' => ErrorMessageEnum::TS_ALREADY_EXIST->value
+            'message' => ErrorMessageEnum::TS_ALREADY_EXIST->value,
         ]);
     }
 
@@ -280,7 +272,6 @@ class TimesheetApiTest extends ApiTestCase
 
         $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
 
-
         self::assertResponseStatusCodeSame(400);
         self::assertJsonContains([
             'description' => "Item not found for \"$employeeIri\".",
@@ -302,7 +293,6 @@ class TimesheetApiTest extends ApiTestCase
         $employeeIri = $this->findIriBy(User::class, ['uuid' => $employee->getUuid()]);
 
         $response = $this->postTimesheet($this->defaultTimesheetPayload(['employee' => $employeeIri]));
-
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -363,7 +353,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetTooMuchTotalHours(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -405,7 +394,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetMinimumRestIncoherentWithWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -447,7 +435,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetMinimumRestIncoherentWithNotWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -489,7 +476,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkShiftIncoherentWithWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -531,7 +517,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkShiftIncoherentWithNotWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -616,7 +601,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithNotWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -658,7 +642,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLunchBreakIncoherentWithWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -741,7 +724,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLocationIncoherentWithWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -787,7 +769,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testCreateTimesheetLocationIncoherentWithNotWorkedDay(): void
     {
-
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
             'endPeriod' => '2024-11-30',
             'workDays' => [
@@ -833,12 +814,11 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testGetTimesheet(): void
     {
-
         $timesheet = TimesheetFactory::new([
             'employee' => self::$user,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. self::$user->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         $data = $response->toArray();
 
@@ -856,14 +836,13 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testGetTimesheetNotAuthorized(): void
     {
-
         $employee = UserFactory::createOne();
 
         $timesheet = TimesheetFactory::new([
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -883,7 +862,6 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testGetTimesheetByManager(): void
     {
-
         $employee = UserFactory::createOne([
             'manager' => self::$user,
         ]);
@@ -892,7 +870,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
 
         $data = $response->toArray();
 
@@ -914,7 +892,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => self::$user,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. self::$user->getUuid() .'/timesheets');
+        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets');
 
         $data = $response->toArray();
 
@@ -925,11 +903,9 @@ class TimesheetApiTest extends ApiTestCase
         $this->assertIsArray($data['member']);
         $this->assertCount(6, $data['member']);
 
-
         $timesheet = $data['member'][0];
 
         $this->assertTimesheet($timesheet);
-
     }
 
     /**
@@ -949,14 +925,13 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets');
+        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets');
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
             'detail' => 'Access Denied.',
             'status' => 403,
         ]);
-
     }
 
     /**
@@ -971,14 +946,14 @@ class TimesheetApiTest extends ApiTestCase
     public function testGetCollectionTimesheetSubordinate(): void
     {
         $employee = UserFactory::createOne([
-            'manager' => self::$user
+            'manager' => self::$user,
         ]);
 
         $timesheets = TimesheetFactory::new([
             'employee' => $employee,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'. $employee->getUuid() .'/timesheets');
+        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets');
 
         $data = $response->toArray();
 
@@ -992,6 +967,5 @@ class TimesheetApiTest extends ApiTestCase
         $timesheet = $data['member'][0];
 
         $this->assertTimesheet($timesheet);
-
     }
 }

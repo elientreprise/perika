@@ -1,13 +1,37 @@
 import React from "react";
 import type {RenderParams} from "../../../../shared/types/RenderParams.ts";
 
+
+type OptionProps = {
+    label: string;
+    value: string | number | boolean
+}
+
+const options: OptionProps[] = [
+    {
+        label: "",
+        value: ""
+    },
+    {
+        label: "OUI",
+        value: true
+    },
+    {
+        label: "NON",
+        value: false
+    },
+    {
+        label: "N/A",
+        value: ""
+    }
+]
+
 export const rowRenderers = {
     isMinDailyRestMet: ({value, rowKey, colKey, onChange, hasError, readonly}:Readonly<RenderParams>) => {
-
         if (readonly) {
             return (
                 <div>
-                    {value}
+                    {options.find(option => option.value === value)?.label}
                 </div>
             )
         }
@@ -18,10 +42,11 @@ export const rowRenderers = {
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
                 className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
-                <option></option>
-                <option value={"true"}>OUI</option>
-                <option>NON</option>
-                <option>N/A</option>
+                {
+                    options.map((option) => {
+                        <option value={option.value.toString()}>{option.label}</option>
+                    })
+                }
             </select>
         )
     },
@@ -31,7 +56,7 @@ export const rowRenderers = {
         if (readonly) {
             return (
                 <div>
-                    {value}
+                    {options.find(option => option.value === value)?.label}
                 </div>
             )
         }
@@ -42,10 +67,11 @@ export const rowRenderers = {
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
                 className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
-                <option></option>
-                <option value={"true"}>OUI</option>
-                <option>NON</option>
-                <option>N/A</option>
+                {
+                    options.map((option) => {
+                        <option value={option.value.toString()}>{option.label}</option>
+                    })
+                }
             </select>
         )
     },
@@ -55,7 +81,7 @@ export const rowRenderers = {
         if (readonly) {
             return (
                 <div>
-                    {value}
+                    {options.find(option => option.value === value)?.label}
                 </div>
             )
         }
@@ -66,10 +92,11 @@ export const rowRenderers = {
                 onChange={(v) => onChange?.(rowKey, colKey, v.target.value)}
                 className={`rounded text-xs cursor-pointer flex justify-between items-center bg-base-100 ${hasError ? "text-error" : ""}`}
             >
-                <option></option>
-                <option value={"true"}>OUI</option>
-                <option>NON</option>
-                <option>N/A</option>
+                {
+                    options.map((option) => {
+                        <option value={option.value.toString()}>{option.label}</option>
+                    })
+                }
             </select>
         )
     },
@@ -83,7 +110,7 @@ export const rowRenderers = {
                 </div>
             )
         }
-   
+
         return (
             <select
                 value={value}

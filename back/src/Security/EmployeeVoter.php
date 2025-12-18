@@ -72,11 +72,11 @@ class EmployeeVoter extends Voter
 
         return true;
     }
+
     private function canViewTimesheetCollection(User $employee, User $user, ?Vote $vote): bool
     {
         if (
             !$this->canView($employee, $user, $vote)
-
         ) {
             return false;
         }

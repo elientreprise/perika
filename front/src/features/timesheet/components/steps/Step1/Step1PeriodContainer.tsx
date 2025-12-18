@@ -59,7 +59,6 @@ export default function Step1PeriodContainer({
             setStartPeriod(start);
             setEndPeriod(end);
         } catch (err: any) {
-            console.error(err);
             setPeriodError(err.message ?? "Erreur inconnue");
         } finally {
             setLoadingPeriod(false);

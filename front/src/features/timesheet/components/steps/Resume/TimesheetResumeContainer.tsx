@@ -1,7 +1,13 @@
 import {useTimesheet} from "../../../hooks/useTimesheet.ts";
 import TimesheetResumeView from "./TimesheetResumeView.tsx";
 import {NotFound} from "../../../../../shared/components/ui/NotFound.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {createComment} from "../../../services/timesheet.ts";
+import {API_URL} from "../../../../../app/config/api.tsx";
+import type {CommentType} from "../../../types/TimesheetType.ts";
+import type {CommentCreateResponse} from "../../../types/CommentCreateResponse.ts";
+import {CommentSchema} from "../../../types/TimesheetType.ts";
+
 
 type Props = {
     employeeUuid: string;
@@ -16,10 +22,28 @@ export default function TimesheetResumeContainer({
 
     const [comment, setComment] = useState<string>( "");
 
-    const [displayComment, setDisplayComment] = useState<boolean>( false);
+    const [comments, setComments] = useState<CommentType[]>(timesheet?.comments || [])
 
-    function handleDisplayComment() {
-        setDisplayComment(!displayComment)
+    useEffect(() => {
+        setComments(timesheet?.comments)
+    }, [timesheet])
+
+    async function handlePostComment() {
+        try {
+            const response: CommentCreateResponse = await createComment({comment: comment, propertyPath: "", timesheet: API_URL+'/timesheets/'+timesheetUuid})
+
+
+            setComments((prev) => {
+                return [response.comment, ...prev]
+            })
+
+
+        } catch (err: any) {
+            console.error(err)
+        } finally {
+            setComment(null)
+        }
+
     }
 
     if (notFound) {
@@ -29,12 +53,12 @@ export default function TimesheetResumeContainer({
     if (timesheet) {
         return (<TimesheetResumeView
             timesheet={timesheet}
-            handleDisplayComment={handleDisplayComment}
+            comments={comments}
             comment={comment}
+            handlePostComment={handlePostComment}
             setComment={setComment}
-            displayComment={displayComment}
-            setDisplayComment={setDisplayComment}
-        />);
+            />
+        );
     }
 
 

@@ -8,6 +8,7 @@ use App\Dto\Response\Timesheet\TimesheetCreatedResponse;
 use App\Entity\Timesheet;
 use App\Entity\TimesheetComment;
 use App\Entity\User;
+use App\Enum\Entity\TimesheetStatusEnum;
 use App\Enum\PermissionEnum;
 use App\Enum\ResponseMessage\SuccessMessageEnum;
 use App\Security\TimesheetVoter;
@@ -51,9 +52,11 @@ readonly class TimesheetProcessor implements ProcessorInterface
             ->setEndPeriod($end)
         ;
 
-        $data->getComments()->map(function(TimesheetComment $comment) use ($user) {
+        $data->getComments()->map(function (TimesheetComment $comment) use ($user) {
             return $comment->setCreatedBy($user);
         });
+
+        $data->setStatus(TimesheetStatusEnum::SUBMITTED);
 
         /** @var Timesheet $timesheet */
         $timesheet = $this->persistProcessor->process($data, $operation, $uriVariables, $context);

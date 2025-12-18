@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use App\Entity\Trait\DateFormatterTrait;
 use App\Entity\Trait\TimestampableTrait;
+use App\Enum\Entity\CommentStatusEnum;
 use App\Enum\PermissionEnum;
 use App\Repository\TimesheetCommentRepository;
 use App\State\Processor\TimesheetCommentsProcessor;
@@ -22,7 +24,7 @@ use Symfony\Component\Uid\Uuid;
         new Get(
             uriTemplate: '/timesheet-comment/{uuid}',
             normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']],
-//            security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)"
+            //            security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)"
         ),
         new Post(
             uriTemplate: '/timesheet-comments',
@@ -50,8 +52,8 @@ use Symfony\Component\Uid\Uuid;
 )]
 class TimesheetComment
 {
-
     use TimestampableTrait;
+    use DateFormatterTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -76,15 +78,25 @@ class TimesheetComment
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['timesheet:item:read', 'timesheet:comment:read'])]
+    #[Groups(['timesheet:item:read'])]
     // todo : ajouter assert
     private ?User $createdBy = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['timesheet:comment:write'])]
-    /// todo : ajouter assert
+    // / todo : ajouter assert
     private ?Timesheet $timesheet = null;
+
+    #[ORM\Column(enumType: CommentStatusEnum::class, options: ['default' => CommentStatusEnum::NEW])]
+    #[Groups(['timesheet:comment:read', 'timesheet:item:read'])]
+    private ?CommentStatusEnum $status = CommentStatusEnum::NEW;
+
+    #[Groups(['timesheet:comment:read', 'timesheet:item:read'])]
+    private ?string $translateStatus = null;
+
+    #[Groups(['timesheet:comment:read', 'timesheet:item:read'])]
+    private ?string $formattedCreatedAt = null;
 
     public function __construct()
     {
@@ -152,8 +164,30 @@ class TimesheetComment
     }
 
     #[Groups(['timesheet:item:read', 'timesheet:comment:read'])]
-    public function getCreatedAt(): mixed
+    public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;
+    }
+
+    public function getStatus(): ?CommentStatusEnum
+    {
+        return $this->status;
+    }
+
+    public function setStatus(CommentStatusEnum $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getTranslateStatus(): ?string
+    {
+        return CommentStatusEnum::translate($this->status);
+    }
+
+    public function getFormattedCreatedAt(): ?string
+    {
+        return $this->formatDate($this->createdAt);
     }
 }

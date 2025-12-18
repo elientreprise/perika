@@ -13,7 +13,6 @@ export function useTimesheet(employeeUuid: string, timesheetUuid: string) {
             setNotFound(false)
             try {
                 const response = await getTimesheetByEmployee(employeeUuid, timesheetUuid);
-
                 if (response) {
                     const parsed = TimesheetSchema.parse(response)
                     setTimesheet(parsed)

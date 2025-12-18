@@ -44,8 +44,7 @@ final class TimesheetFactory extends PersistentObjectFactory
                     'lunchBreak' => 1,
                     'location' => (new Location())
                         ->setPm('string')
-                        ->setAm('string')
-                    ,
+                        ->setAm('string'),
                 ])->create();
             }
         });

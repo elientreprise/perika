@@ -2,8 +2,8 @@
 
 namespace App\Dto\Response\Timesheet;
 
+use App\Dto\Entity\TimesheetCommentView;
 use Symfony\Component\Serializer\Attribute\Groups;
-use Symfony\Component\Uid\Uuid;
 
 class TimesheetCommentAddedResponse
 {
@@ -11,9 +11,7 @@ class TimesheetCommentAddedResponse
         #[Groups(['timesheet:comment:read'])]
         public string $message,
         #[Groups(['timesheet:comment:read'])]
-        public Uuid $uuid,
-        #[Groups(['timesheet:comment:read'])]
-        public Uuid $employeeUuid,
+        public TimesheetCommentView $comment,
     ) {
     }
 }

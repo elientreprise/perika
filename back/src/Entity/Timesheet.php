@@ -9,12 +9,13 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
 use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
+use App\Entity\Trait\DateFormatterTrait;
 use App\Entity\Trait\TimestampableTrait;
+use App\Enum\Entity\CommentStatusEnum;
 use App\Enum\Entity\TimesheetStatusEnum;
 use App\Enum\PermissionEnum;
 use App\Filter\TimesheetSearchFilter;
@@ -70,14 +71,14 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/employees/{employeeUuid}/timesheets/{uuid}',
             uriVariables: [
                 'employeeUuid' => 'employeeUuid',
-                'uuid' => 'uuid'
+                'uuid' => 'uuid',
             ],
             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
             security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)",
             provider: EmployeeTimesheetProvider::class
         ),
         new GetCollection(
-             uriTemplate: '/employees/{employeeUuid}/timesheets',
+            uriTemplate: '/employees/{employeeUuid}/timesheets',
             uriVariables: [
                 'employeeUuid' => new Link(
                     toProperty: 'employee',
@@ -91,7 +92,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/timesheets',
             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
             // todo: filter seulement par le manager
-        )
+        ),
     ],
     normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
     denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
@@ -108,8 +109,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 ])]
 class Timesheet
 {
-
     use TimestampableTrait;
+    use DateFormatterTrait;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -132,11 +133,16 @@ class Timesheet
     #[Groups(['timesheet:item:read'])]
     #[Assert\NotBlank()]
     private ?\DateTimeImmutable $startPeriod = null;
+    #[Groups(['timesheet:read'])]
+    private ?string $formattedStartPeriod = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
     #[Assert\NotBlank()]
     private ?\DateTimeImmutable $endPeriod = null;
+
+    #[Groups(['timesheet:read'])]
+    private ?string $formattedEndPeriod = null;
 
     /** @var Collection<int, TimesheetWorkDay> */
     #[ORM\OneToMany(targetEntity: TimesheetWorkDay::class, mappedBy: 'timesheet', cascade: ['persist'], orphanRemoval: true)]
@@ -152,10 +158,17 @@ class Timesheet
     #[Groups(['timesheet:item:read'])]
     private ?TimesheetStatusEnum $status = TimesheetStatusEnum::DRAFT;
 
+    #[Groups(['timesheet:item:read', 'timesheet:read'])]
+    private ?string $translateStatus = null;
+
+    #[Groups(['timesheet:item:read', 'timesheet:read'])]
+    private ?string $formattedCreatedAt = null;
+
     /**
      * @var Collection<int, TimesheetComment>
      */
     #[Groups(['timesheet:write', 'timesheet:read'])]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
     #[ORM\OneToMany(targetEntity: TimesheetComment::class, mappedBy: 'timesheet', cascade: ['persist'])]
     private Collection $comments;
 
@@ -294,6 +307,16 @@ class Timesheet
         return $this->comments;
     }
 
+    /**
+     * @return Collection<int, TimesheetComment>
+     */
+    public function getNewComments(User $user): Collection
+    {
+        return $this->comments->filter(function (TimesheetComment $comment) use ($user) {
+            return CommentStatusEnum::NEW === $comment->getStatus() && $comment->getCreatedBy()?->getId() !== $user->getId();
+        });
+    }
+
     public function addComment(TimesheetComment $comment): static
     {
         if (!$this->comments->contains($comment)) {
@@ -320,6 +343,28 @@ class Timesheet
     public function getThreeLastComments(): Collection
     {
         $length = $this->comments->count();
+
         return $length > 3 ? new ArrayCollection($this->comments->slice($length, 3)) : $this->comments;
+    }
+
+    public function getTranslateStatus(): ?string
+    {
+        return TimesheetStatusEnum::translate($this->status);
+    }
+
+    public function getFormattedCreatedAt(): ?string
+    {
+        return $this->formatDate($this->createdAt);
+    }
+
+    public function getFormattedStartPeriod(): ?string
+    {
+        return $this->formatDate($this->startPeriod);
+    }
+
+    public function getFormattedEndPeriod(): ?string
+    {
+        return $this->formatDate($this->endPeriod
+        );
     }
 }

@@ -7,18 +7,18 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\TypeInfo\Type;
+
 final class TimesheetSearchFilter extends AbstractFilter
 {
     protected function filterProperty(
         string $property,
-               $value,
+        $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
-        Operation $operation = null,
-        array $context = []
+        ?Operation $operation = null,
+        array $context = [],
     ): void {
-
         if (!$this->isPropertyEnabled($property, $resourceClass)) {
             return;
         }
@@ -46,7 +46,6 @@ final class TimesheetSearchFilter extends AbstractFilter
                         ->andWhere(sprintf('%s.%s = :%s', $alias, $property, $parameterName))
                         ->setParameter($parameterName, $date);
                 } catch (\Exception $e) {
-
                 }
                 break;
 
@@ -56,7 +55,6 @@ final class TimesheetSearchFilter extends AbstractFilter
                     ->setParameter($parameterName, $value);
                 break;
         }
-
     }
 
     public function getDescription(string $resourceClass): array

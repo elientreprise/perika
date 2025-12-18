@@ -8,8 +8,9 @@ use App\Repository\TimesheetRepository;
 
 readonly class TimesheetService
 {
-    public function __construct(private TimesheetRepository $timesheetRepository)
-    {
+    public function __construct(
+        private TimesheetRepository $timesheetRepository,
+    ) {
     }
 
     public function getById(int $id): ?Timesheet

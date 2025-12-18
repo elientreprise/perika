@@ -4,7 +4,6 @@ namespace App\Tests\Repository;
 
 use App\Entity\Timesheet;
 use App\Entity\User;
-use App\Repository\TimesheetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -43,6 +42,7 @@ class TimesheetRepositoryTest extends KernelTestCase
             ->setEndPeriod(new \DateTimeImmutable($end));
 
         $this->entityManager->persist($ts);
+
         return $ts;
     }
 
@@ -52,7 +52,7 @@ class TimesheetRepositoryTest extends KernelTestCase
         $this->createTimesheet($user, '2024-01-01', '2024-01-07');
         $this->entityManager->flush();
 
-        $result =$this->timesheetRepository->hasOverlap(
+        $result = $this->timesheetRepository->hasOverlap(
             $user,
             new \DateTimeImmutable('2024-01-05'),
             new \DateTimeImmutable('2024-01-10')
@@ -67,7 +67,7 @@ class TimesheetRepositoryTest extends KernelTestCase
         $this->createTimesheet($user, '2024-01-01', '2024-01-07');
         $this->entityManager->flush();
 
-        $result =$this->timesheetRepository->hasOverlap(
+        $result = $this->timesheetRepository->hasOverlap(
             $user,
             new \DateTimeImmutable('2024-01-08'),
             new \DateTimeImmutable('2024-01-10')

@@ -10,7 +10,7 @@ export default function TimesheetCommentForm({
                                                  }:Readonly<Props>) {
     return (
         <div className={"w-full"}>
-            <textarea onChange={(event) => onChange(event.target.value)} className="textarea w-full textarea-ghost rounded-xs" placeholder="Commentaire">{value}</textarea>
+            <textarea onChange={(event) => onChange(event.target.value)} className="textarea w-full textarea-ghost bg-base-300 rounded-xs" placeholder="Commentaire">{value}</textarea>
         </div>
     )
 
