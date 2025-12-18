@@ -3,7 +3,7 @@ import type {CalculatePeriodPayload} from "../types/CalculatePeriodPayload.ts";
 import type {CalculatePeriodResponse} from "../types/CalculatePeriodResponse.ts";
 import type {CheckExistsResponse} from "../types/CheckExistsResponse.ts";
 import type {CheckExistsPayload} from "../types/CheckExistsPayload.ts";
-import type {TimesheetType} from "../types/TimesheetType.ts";
+import type {CommentType, TimesheetType} from "../types/TimesheetType.ts";
 import type {TimesheetCreateResponse} from "../types/TimesheetCreateResponse.ts";
 import {get, post} from "../../../app/services/api.ts";
 import type {CommentPayloadType, TimesheetPayloadType} from "../types/TimesheetPayload.ts";
@@ -32,11 +32,23 @@ export async function getTimesheetByUuid(uuid: string ): Promise<TimesheetType> 
     return get<TimesheetType>(`/timesheets/${uuid}`);
 }
 
-export async function getTimesheetByEmployee(employeeUuid: string, timesheetUuid: string ): Promise<TimesheetType> {
-    return get<TimesheetType>(`/employees/${employeeUuid}/timesheets/${timesheetUuid}`);
+type CommentsPaginationResponse = {
+    totalItems: number;
+    member: CommentType[];
+    view: {
+        first: string;
+        last: string;
+        next: string;
+    }
+
+}
+export async function getCommentsByPage(timesheetUuid, page): Promise<CommentsPaginationResponse> {
+    return await get<CommentsPaginationResponse>(`/timesheets/${timesheetUuid}/comments?page=${page}`);
 }
 
-
+export async function getTimesheetByEmployee(employeeUuid: string, timesheetUuid: string ): Promise<TimesheetType> {
+    return await get<TimesheetType>(`/employees/${employeeUuid}/timesheets/${timesheetUuid}`);
+}
 
 export async function searchTimesheets(employeeUuid, parameters: TimesheetSearchParameters = {}): Promise<TimesheetType[]> {
 

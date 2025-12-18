@@ -1,12 +1,12 @@
 import {useTimesheet} from "../../../hooks/useTimesheet.ts";
 import TimesheetResumeView from "./TimesheetResumeView.tsx";
 import {NotFound} from "../../../../../shared/components/ui/NotFound.tsx";
-import {useEffect, useState} from "react";
-import {createComment} from "../../../services/timesheet.ts";
+import React, {useEffect, useRef, useState} from "react";
+import {createComment, getCommentsByPage} from "../../../services/timesheet.ts";
 import {API_URL} from "../../../../../app/config/api.tsx";
 import type {CommentType} from "../../../types/TimesheetType.ts";
 import type {CommentCreateResponse} from "../../../types/CommentCreateResponse.ts";
-import {CommentSchema} from "../../../types/TimesheetType.ts";
+import {useFlash} from "../../../../../shared/hooks/useFlash.ts";
 
 
 type Props = {
@@ -20,30 +20,95 @@ export default function TimesheetResumeContainer({
 
     const { timesheet, notFound } = useTimesheet(employeeUuid || '-',  timesheetUuid || '-');
 
-    const [comment, setComment] = useState<string>( "");
+    const [comments, setComments] = useState<CommentType[]>([]);
+    const [page, setPage] = useState<number>(1);
+    const [hasMore, setHasMore] = useState<boolean>(true);
+    const [loadingComment, setLoadingComment] = useState<boolean>(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [comment, setComment] = useState<string>("");
+    const [totalComments, setTotalComments] = useState<number>(0);
 
-    const [comments, setComments] = useState<CommentType[]>(timesheet?.comments || [])
+    const { push } = useFlash();
+
+    async function loadComments(pageToLoad: number) {
+
+
+          setLoadingComment(true)
+          try {
+
+              const response = await getCommentsByPage(
+                  timesheetUuid, pageToLoad
+              );
+
+              if (response) {
+                  setLoadingComment(false);
+                  setComments(prev => [...response.member, ...prev]);
+                  setTotalComments(response.totalItems)
+                  setHasMore(response.view?.next !== undefined);
+              }
+          } catch (err: any) {
+                setLoadingComment(false)
+          }
+    }
+
 
     useEffect(() => {
-        setComments(timesheet?.comments)
-    }, [timesheet])
+        loadComments(1);
+    }, [timesheetUuid])
 
+    useEffect(() => {
+        if (!containerRef.current) return;
+        if (comments.length === 0) return;
+
+        if (page > 1 ) return;
+
+        requestAnimationFrame(() => {
+            const el = containerRef.current;
+            el.scrollTop = el.scrollHeight;
+        });
+    }, [comments.length]);
     async function handlePostComment() {
         try {
             const response: CommentCreateResponse = await createComment({comment: comment, propertyPath: "", timesheet: API_URL+'/timesheets/'+timesheetUuid})
 
+            const el = containerRef.current;
+            if (!el) return;
 
-            setComments((prev) => {
-                return [response.comment, ...prev]
-            })
+            const isNearBottom =
+                el.scrollHeight - el.scrollTop - el.clientHeight < 50;
 
+            setComments(prev => [...prev, response.comment]);
 
+            if (isNearBottom) {
+                requestAnimationFrame(() => {
+                    el.scrollTop = el.scrollHeight;
+                });
+            }
+            push(response.message, "success");
         } catch (err: any) {
-            console.error(err)
         } finally {
-            setComment(null)
+
         }
 
+    }
+
+    async function handleScroll(e: React.UIEvent<HTMLDivElement>) {
+
+        if (!hasMore || loadingComment) return;
+
+        const el = e.currentTarget;
+
+        if (el.scrollTop <= 10) {
+            const previousHeight = el.scrollHeight;
+
+            await loadComments(page + 1);
+
+            requestAnimationFrame(() => {
+                el.scrollTop = el.scrollHeight - previousHeight;
+            });
+
+            setPage(prev => prev + 1);
+        }
     }
 
     if (notFound) {
@@ -57,19 +122,26 @@ export default function TimesheetResumeContainer({
             comment={comment}
             handlePostComment={handlePostComment}
             setComment={setComment}
-            />
+            ref={containerRef}
+            onScroll={handleScroll}
+            loadingComment={loadingComment}
+            totalComments={totalComments}
+        />
         );
     }
 
-
-
     return (
-        <div className="flex w-1/2 flex-col gap-4">
-            <div className="skeleton h-12 w-full"></div>
-            <div className="skeleton h-4 w-28"></div>
-            <div className="skeleton h-4 w-full"></div>
-            <div className="skeleton h-4 w-full"></div>
-            <div className="skeleton h-[100vh] w-full"></div>
+        <div className={"flex gap-5"}>
+            <div className="flex w-2/4 flex-col gap-5 p-10">
+                <div className="skeleton h-12 w-full"></div>
+                <div className="skeleton h-4 w-28"></div>
+                <div className="skeleton h-4 w-full"></div>
+                <div className="skeleton h-4 w-full"></div>
+                <div className="skeleton h-[100vh] w-full"></div>
+            </div>
+            <div className="flex w-1/3 flex-col gap-5">
+                <div className="skeleton h-[100vh]"></div>
+            </div>
         </div>
     );
 }

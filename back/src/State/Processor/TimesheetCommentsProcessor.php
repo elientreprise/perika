@@ -58,7 +58,9 @@ readonly class TimesheetCommentsProcessor implements ProcessorInterface
                     uuid: $comment->getCreatedBy()?->getUuid(),
                     fullName: $comment->getCreatedBy()?->getFullName()
                 ),
-                createdAt: $comment->getCreatedAt()->format('Y-m-d')
+                createdAt: $comment->getCreatedAt(),
+                formattedCreatedAt:  $comment->getFormattedCreatedAt(),
+                translateStatus: $comment->getTranslateStatus()
             ),
         ));
     }

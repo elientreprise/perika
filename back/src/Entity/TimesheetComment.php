@@ -43,7 +43,10 @@ use Symfony\Component\Uid\Uuid;
                     security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET_COMMENT_COLLECTION->value."', timesheet)"
                 ),
             ],
-            normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']],
+            paginationItemsPerPage: 10,
+            paginationFetchJoinCollection: true,
+            order: ['createdAt' => "DESC"],
+            normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']]
         ),
     ],
     normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']],
@@ -78,7 +81,7 @@ class TimesheetComment
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['timesheet:item:read'])]
+    #[Groups(['timesheet:item:read', 'timesheet:comment:read'])]
     // todo : ajouter assert
     private ?User $createdBy = null;
 

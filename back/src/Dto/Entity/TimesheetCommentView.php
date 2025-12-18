@@ -8,7 +8,9 @@ class TimesheetCommentView
         public string $uuid,
         public string $comment,
         public CommentCreatedByView $createdBy,
-        public string $createdAt,
+        public \DateTimeInterface $createdAt,
+        public string $formattedCreatedAt,
+        public string $translateStatus
     ) {
     }
 }

@@ -393,7 +393,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->subordinates->remove($employee);
     }
 
-    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read'])]
+    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read', 'timesheet:comment:read'])]
     /**
      * @return string
      *                Concat firstname and lastname

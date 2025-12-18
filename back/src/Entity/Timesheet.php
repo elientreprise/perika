@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
@@ -23,6 +24,8 @@ use App\Repository\TimesheetRepository;
 use App\State\Processor\CheckTimesheetExistsProcessor;
 use App\State\Processor\TimesheetCalculatePeriodProcessor;
 use App\State\Processor\TimesheetProcessor;
+use App\State\Processor\TimesheetUpdateProcessor;
+use App\State\Processor\TimesheetValidProcessor;
 use App\State\Provider\EmployeeTimesheetProvider;
 use App\Validator\NoTimesheetOverlap;
 use App\Validator\ValidStartEndDate;
@@ -62,6 +65,12 @@ use Symfony\Component\Validator\Constraints as Assert;
             output: TimesheetCalculatePeriodResponse::class,
             processor: TimesheetCalculatePeriodProcessor::class
         ),
+        new Put(
+            uriTemplate: '/timesheets/{uuid}',
+            normalizationContext: ['groups' => ['timesheet:read']],
+            denormalizationContext: ['groups' => ['timesheet:update']],
+            processor: TimesheetValidProcessor::class
+        ),
         new Get(
             uriTemplate: '/timesheets/{uuid}',
             normalizationContext: ['groups' => ['timesheet:read', 'timesheet:item:read']],
@@ -98,9 +107,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
     validationContext: ['groups' => 'Default', 'create', 'edit']
 )]
-#[ValidStartEndDate]
-#[ValidTimesheet]
-#[NoTimesheetOverlap]
+#[ValidStartEndDate(groups: ['timesheet:write'])]
+#[ValidTimesheet(groups: ['timesheet:write'])]
+#[NoTimesheetOverlap(groups: ['timesheet:write'])]
 #[ApiFilter(TimesheetSearchFilter::class, properties: [
     'uuid',
     'startPeriod',
@@ -126,19 +135,19 @@ class Timesheet
     #[ORM\ManyToOne(inversedBy: 'timesheets')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['timesheet:read', 'timesheet:write', 'timesheet:item:read'])]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(groups: ['timesheet:write'])]
     private ?User $employee = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['timesheet:item:read'])]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(groups: ['timesheet:write'])]
     private ?\DateTimeImmutable $startPeriod = null;
     #[Groups(['timesheet:read'])]
     private ?string $formattedStartPeriod = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(groups: ['timesheet:write'])]
     private ?\DateTimeImmutable $endPeriod = null;
 
     #[Groups(['timesheet:read'])]
@@ -147,7 +156,7 @@ class Timesheet
     /** @var Collection<int, TimesheetWorkDay> */
     #[ORM\OneToMany(targetEntity: TimesheetWorkDay::class, mappedBy: 'timesheet', cascade: ['persist'], orphanRemoval: true)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
-    #[Assert\Valid]
+    #[Assert\Valid(groups: ['timesheet:write'])]
     private Collection $workDays;
 
     #[ORM\Column(options: ['default' => 0])]
