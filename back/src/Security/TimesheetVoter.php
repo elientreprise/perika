@@ -41,6 +41,7 @@ class TimesheetVoter extends Voter
             PermissionEnum::CAN_VIEW_TIMESHEET->value => $this->canView($timesheet, $user, $vote),
             PermissionEnum::CAN_EDIT_TIMESHEET->value => $this->canEdit($timesheet, $user, $vote),
             PermissionEnum::CAN_VIEW_TIMESHEET_COMMENT_COLLECTION->value => $this->canViewCommentCollection($timesheet, $user, $vote),
+            PermissionEnum::CAN_VALID_TIMESHEET->value => $this->canValid($timesheet, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
@@ -97,6 +98,23 @@ class TimesheetVoter extends Voter
         if (
             !$this->canView($timesheet, $user, $vote)
         ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function canValid(Timesheet $timesheet, User $user, ?Vote $vote): bool
+    {
+        if (
+            !$user->isManager()
+            && !$user->getSubordinates()->contains($timesheet->getEmployee())
+        ) {
+            $vote?->addReason(sprintf(
+                'The logged in user (username: %s) can\'t access to this resource. Only Manager for his subordinates can do this.',
+                $user->getUserIdentifier()
+            ));
+
             return false;
         }
 

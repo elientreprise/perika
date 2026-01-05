@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Dto\Input\CalculatePeriodInput;
@@ -65,10 +66,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             output: TimesheetCalculatePeriodResponse::class,
             processor: TimesheetCalculatePeriodProcessor::class
         ),
-        new Put(
-            uriTemplate: '/timesheets/{uuid}',
+        new Patch(
+            uriTemplate: '/timesheets/{uuid}/valid',
             normalizationContext: ['groups' => ['timesheet:read']],
-            denormalizationContext: ['groups' => ['timesheet:update']],
+            input: false,
             processor: TimesheetValidProcessor::class
         ),
         new Get(
