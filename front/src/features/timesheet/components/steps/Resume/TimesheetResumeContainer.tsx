@@ -19,6 +19,7 @@ export default function TimesheetResumeContainer({
                                                  }: Readonly<Props>) {
 
     const { timesheet, notFound } = useTimesheet(employeeUuid || '-',  timesheetUuid || '-');
+    const [isValidating, setIsValidating] = useState(false);
 
     const [comments, setComments] = useState<CommentType[]>([]);
     const [page, setPage] = useState<number>(1);
@@ -126,6 +127,8 @@ export default function TimesheetResumeContainer({
             onScroll={handleScroll}
             loadingComment={loadingComment}
             totalComments={totalComments}
+            isValidating={isValidating}
+            setIsValidating={setIsValidating}
         />
         );
     }

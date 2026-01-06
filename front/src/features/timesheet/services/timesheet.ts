@@ -5,12 +5,12 @@ import type {CheckExistsResponse} from "../types/CheckExistsResponse.ts";
 import type {CheckExistsPayload} from "../types/CheckExistsPayload.ts";
 import type {CommentType, TimesheetType} from "../types/TimesheetType.ts";
 import type {TimesheetCreateResponse} from "../types/TimesheetCreateResponse.ts";
-import {get, post} from "../../../app/services/api.ts";
+import {get, patch, post} from "../../../app/services/api.ts";
 import type {CommentPayloadType, TimesheetPayloadType} from "../types/TimesheetPayload.ts";
 import {API_URL} from "../../../app/config/api.tsx";
 import type {TimesheetSearchParameters} from "../types/TimesheetSearchParameters.ts";
-import {CommentPayloadSchema} from "../types/TimesheetPayload.ts";
 import type {CommentCreateResponse} from "../types/CommentCreateResponse.ts";
+import type {ValidateTimesheetResponse} from "../types/ValidateTimesheetResponse.ts";
 
 
 export async function calculatePeriod(data: CalculatePeriodPayload ): Promise<CalculatePeriodResponse> {
@@ -26,6 +26,10 @@ export async function create(data: TimesheetPayloadType ): Promise<TimesheetCrea
 
 export async function createComment(data: CommentPayloadType ): Promise<CommentCreateResponse> {
     return post<CommentCreateResponse>("/timesheet-comments", data);
+}
+
+export async function validateTimesheet(uuid: string): Promise<ValidateTimesheetResponse> {
+    return patch<ValidateTimesheetResponse>(`/timesheets/${uuid}/valid`, {});
 }
 
 export async function getTimesheetByUuid(uuid: string ): Promise<TimesheetType> {

@@ -1,6 +1,4 @@
 import { z } from "zod";
-import {UserSchema} from "../../employee/types/UserType.ts";
-
 
 export const LocationSchema = z.object({
     am: z.string().nullable(),
@@ -60,8 +58,11 @@ export const TimesheetSchema = z.object({
     workDays: z.array(WorkDaySchema),
     comments: z.array(CommentSchema),
     translateStatus: z.string(),
-    formattedCreatedAt: z.string()
-
+    formattedCreatedAt: z.string(),
+    valid: z.boolean().nullable(),
+    draft: z.boolean().nullable(),
+    needEdit: z.boolean().nullable(),
+    submitted: z.boolean().nullable(),
 });
 
 
