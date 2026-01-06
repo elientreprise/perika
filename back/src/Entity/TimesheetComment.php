@@ -45,7 +45,7 @@ use Symfony\Component\Uid\Uuid;
             ],
             paginationItemsPerPage: 10,
             paginationFetchJoinCollection: true,
-            order: ['createdAt' => "DESC"],
+            order: ['createdAt' => 'DESC'],
             normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']]
         ),
     ],

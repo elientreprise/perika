@@ -10,11 +10,11 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Dto\Input\CalculatePeriodInput;
 use App\Dto\Input\CheckTimesheetInput;
 use App\Dto\Response\Timesheet\CheckTimesheetResponse;
 use App\Dto\Response\Timesheet\TimesheetCalculatePeriodResponse;
+use App\Entity\Interface\TimesheetStatusInterface;
 use App\Entity\Trait\DateFormatterTrait;
 use App\Entity\Trait\TimestampableTrait;
 use App\Enum\Entity\CommentStatusEnum;
@@ -25,7 +25,6 @@ use App\Repository\TimesheetRepository;
 use App\State\Processor\CheckTimesheetExistsProcessor;
 use App\State\Processor\TimesheetCalculatePeriodProcessor;
 use App\State\Processor\TimesheetProcessor;
-use App\State\Processor\TimesheetUpdateProcessor;
 use App\State\Processor\TimesheetValidProcessor;
 use App\State\Provider\EmployeeTimesheetProvider;
 use App\Validator\NoTimesheetOverlap;
@@ -117,7 +116,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     'endPeriod',
     'status',
 ])]
-class Timesheet
+class Timesheet implements TimesheetStatusInterface
 {
     use TimestampableTrait;
     use DateFormatterTrait;
@@ -376,5 +375,41 @@ class Timesheet
     {
         return $this->formatDate($this->endPeriod
         );
+    }
+
+    /**
+     * @return bool
+     */
+    #[Groups(['timesheet:item:read'])]
+    #[\Override] public function isValid(): bool
+    {
+       return $this->getStatus() === TimesheetStatusEnum::VALID;
+    }
+
+    /**
+     * @return bool
+     */
+    #[Groups(['timesheet:item:read'])]
+    #[\Override] public function isDraft(): bool
+    {
+        return $this->getStatus() === TimesheetStatusEnum::DRAFT;
+    }
+
+    /**
+     * @return bool
+     */
+    #[Groups(['timesheet:item:read'])]
+    #[\Override] public function isNeedEdit(): bool
+    {
+        return $this->getStatus() === TimesheetStatusEnum::NEED_EDIT;
+    }
+
+    /**
+     * @return bool
+     */
+    #[Groups(['timesheet:item:read'])]
+    #[\Override] public function isSubmitted(): bool
+    {
+        return $this->getStatus() === TimesheetStatusEnum::SUBMITTED;
     }
 }

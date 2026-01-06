@@ -107,6 +107,14 @@ class TimesheetVoter extends Voter
     private function canValid(Timesheet $timesheet, User $user, ?Vote $vote): bool
     {
         if (
+            $timesheet->isValid()
+        ) {
+            $vote?->addReason('This timesheet are already validated.');
+
+            return false;
+        }
+
+        if (
             !$user->isManager()
             && !$user->getSubordinates()->contains($timesheet->getEmployee())
         ) {

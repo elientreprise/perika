@@ -10,7 +10,7 @@ class TimesheetCommentView
         public CommentCreatedByView $createdBy,
         public \DateTimeInterface $createdAt,
         public string $formattedCreatedAt,
-        public string $translateStatus
+        public string $translateStatus,
     ) {
     }
 }

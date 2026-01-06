@@ -15,7 +15,6 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 
 readonly class TimesheetCommentsProcessor implements ProcessorInterface
 {
@@ -23,7 +22,6 @@ readonly class TimesheetCommentsProcessor implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
         private Security $security,
-        private AccessDecisionManagerInterface $decisionManager,
     ) {
     }
 
@@ -59,7 +57,7 @@ readonly class TimesheetCommentsProcessor implements ProcessorInterface
                     fullName: $comment->getCreatedBy()?->getFullName()
                 ),
                 createdAt: $comment->getCreatedAt(),
-                formattedCreatedAt:  $comment->getFormattedCreatedAt(),
+                formattedCreatedAt: $comment->getFormattedCreatedAt(),
                 translateStatus: $comment->getTranslateStatus()
             ),
         ));

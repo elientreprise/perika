@@ -18,6 +18,7 @@ class TimesheetListener
 
     public function preUpdate(Timesheet $timesheet, PreUpdateEventArgs $event): void
     {
+        $timesheet->setUpdatedAt(new \DateTime());
         $timesheet->setTotalTime($timesheet->computeTotalTime());
 
         $entityManager = $event->getObjectManager();

@@ -32,8 +32,6 @@ readonly class TimesheetValidProcessor implements ProcessorInterface
      */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-
-
         if (!$data instanceof Timesheet) {
             return $data;
         }
@@ -52,6 +50,7 @@ readonly class TimesheetValidProcessor implements ProcessorInterface
     }
 
     /**
+     * TODO: faire une fonction réutilisable
      * Récupère la première raison de refus pour un voter donné.
      */
     private function getVoterReason(string $voterClass): string
