@@ -400,6 +400,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getFullName(): string
     {
+        if(!$this->firstName || !$this->lastName) {
+            return '';
+        }
+
         return sprintf('%s %s', ucfirst($this->firstName), ucfirst($this->lastName));
     }
 
@@ -466,5 +470,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isAdmin(): bool
     {
         return $this->hasRole(CoreUserRoleEnum::ADMIN->value);
+    }
+
+    public function setUuid(Uuid $uuid): User
+    {
+        $this->uuid = $uuid;
+        return $this;
     }
 }
