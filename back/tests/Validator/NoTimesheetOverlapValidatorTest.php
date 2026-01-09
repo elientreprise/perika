@@ -13,6 +13,8 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class NoTimesheetOverlapValidatorTest extends ConstraintValidatorTestCase
 {
+    const string DEFAULT_CALCULATED_START_PERIOD = '2024-01-01';
+    const string DEFAULT_CALCULATED_END_PERIOD = '2024-01-07';
     private MockObject $timesheetService;
 
     protected function createValidator(): NoTimesheetOverlapValidator
@@ -33,8 +35,8 @@ class NoTimesheetOverlapValidatorTest extends ConstraintValidatorTestCase
         $this->timesheetService
             ->method('timesheetPeriodCalculator')
             ->willReturn([
-                new \DateTimeImmutable('2024-01-01'),
-                new \DateTimeImmutable('2024-01-07'),
+                new \DateTimeImmutable(self::DEFAULT_CALCULATED_START_PERIOD),
+                new \DateTimeImmutable(self::DEFAULT_CALCULATED_END_PERIOD),
             ]);
 
         $this->timesheetService
@@ -54,13 +56,13 @@ class NoTimesheetOverlapValidatorTest extends ConstraintValidatorTestCase
 
         $timesheet = (new Timesheet())
             ->setEmployee($employee)
-            ->setEndPeriod(new \DateTimeImmutable('2024-01-07'));
+            ->setEndPeriod(new \DateTimeImmutable(self::DEFAULT_CALCULATED_END_PERIOD));
 
         $this->timesheetService
             ->method('timesheetPeriodCalculator')
             ->willReturn([
-                new \DateTimeImmutable('2024-01-01'),
-                new \DateTimeImmutable('2024-01-07'),
+                new \DateTimeImmutable(self::DEFAULT_CALCULATED_START_PERIOD),
+                new \DateTimeImmutable(self::DEFAULT_CALCULATED_END_PERIOD),
             ]);
 
         $this->timesheetService

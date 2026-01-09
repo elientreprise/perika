@@ -13,8 +13,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 readonly class LinkEmployeeProcessor implements ProcessorInterface
 {
     public function __construct(
-        #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
-        private ProcessorInterface $persistProcessor,
         private UserService $employeeService,
         private EntityManagerInterface $entityManager,
     ) {
@@ -35,10 +33,14 @@ readonly class LinkEmployeeProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
+        $status = match (true) {
+            $categorizedEmployees->countOrphans() === count($employeeUuids) => 'success',
+            $categorizedEmployees->countOrphans() > 0 => 'partial_success',
+            default => 'error'
+        };
+
         return new LinkEmployeeResponse(
-            status: $categorizedEmployees->countOrphans() === count($employeeUuids)
-                ? 'success'
-                : ($categorizedEmployees->countOrphans() > 0 ? 'partial_success' : 'error'),
+            status: $status,
             summary: [
                 'added' => $categorizedEmployees->countOrphans(),
                 'notFounds' => $categorizedEmployees->countNotFounds(),
@@ -56,4 +58,5 @@ readonly class LinkEmployeeProcessor implements ProcessorInterface
             refreshManagerData: $categorizedEmployees->countOrphans() > 0,
         );
     }
+
 }

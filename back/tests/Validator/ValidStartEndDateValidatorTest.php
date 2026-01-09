@@ -10,6 +10,9 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 class ValidStartEndDateValidatorTest extends ConstraintValidatorTestCase
 {
+    const string DEFAULT_START_PERIOD = '2024-01-10';
+    const string DEFAULT_END_PERIOD = '2024-01-05';
+
     protected function createValidator(): ValidStartEndDateValidator
     {
         return new ValidStartEndDateValidator();
@@ -31,8 +34,8 @@ class ValidStartEndDateValidatorTest extends ConstraintValidatorTestCase
     public function testStartGreaterThanEnd(): void
     {
         $timesheet = (new Timesheet())
-            ->setStartPeriod(new \DateTimeImmutable('2024-01-10'))
-            ->setEndPeriod(new \DateTimeImmutable('2024-01-05'));
+            ->setStartPeriod(new \DateTimeImmutable(self::DEFAULT_START_PERIOD))
+            ->setEndPeriod(new \DateTimeImmutable(self::DEFAULT_END_PERIOD));
 
         $constraint = new ValidStartEndDate();
 
@@ -48,8 +51,8 @@ class ValidStartEndDateValidatorTest extends ConstraintValidatorTestCase
     public function testEndLessOrEqualStart(): void
     {
         $timesheet = (new Timesheet())
-            ->setStartPeriod(new \DateTimeImmutable('2024-01-10'))
-            ->setEndPeriod(new \DateTimeImmutable('2024-01-10'));
+            ->setStartPeriod(new \DateTimeImmutable(self::DEFAULT_START_PERIOD))
+            ->setEndPeriod(new \DateTimeImmutable(self::DEFAULT_START_PERIOD));
 
         $constraint = new ValidStartEndDate();
 

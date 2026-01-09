@@ -46,6 +46,7 @@ final class TimesheetSearchFilter extends AbstractFilter
                         ->andWhere(sprintf('%s.%s = :%s', $alias, $property, $parameterName))
                         ->setParameter($parameterName, $date);
                 } catch (\Exception $e) {
+                    dump($e->getMessage());
                 }
                 break;
 
@@ -54,6 +55,12 @@ final class TimesheetSearchFilter extends AbstractFilter
                     ->andWhere(sprintf('%s.status = :%s', $alias, $parameterName))
                     ->setParameter($parameterName, $value);
                 break;
+            default:
+                throw new \InvalidArgumentException(sprintf(
+                    'Filtering by "%s" is not allowed.',
+                    $property
+                ));
+
         }
     }
 

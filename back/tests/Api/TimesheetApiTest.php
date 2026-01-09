@@ -27,6 +27,8 @@ class TimesheetApiTest extends ApiTestCase
     use Factories;
     use ResetDatabase;
 
+    const string DEFAULT_END_PERIOD = '2024-11-30';
+    const string API_EMPLOYEES = '/api/employees/';
     private static Client $client;
     private static UserInterface $user;
 
@@ -331,7 +333,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetNotEnoughTotalHours(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -372,7 +374,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetTooMuchTotalHours(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -413,7 +415,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetMinimumRestIncoherentWithWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -454,7 +456,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetMinimumRestIncoherentWithNotWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Sunday->value => [
                     'day' => WeekDayEnum::Sunday->value,
@@ -495,7 +497,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetWorkShiftIncoherentWithWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -536,7 +538,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetWorkShiftIncoherentWithNotWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Sunday->value => [
                     'day' => WeekDayEnum::Sunday->value,
@@ -578,7 +580,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -620,7 +622,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetWorkedMoreThanHalfDayIncoherentWithNotWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Sunday->value => [
                     'day' => WeekDayEnum::Sunday->value,
@@ -661,7 +663,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetLunchBreakIncoherentWithWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -702,7 +704,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetLunchBreakIncoherentWithNotWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Sunday->value => [
                     'day' => WeekDayEnum::Sunday->value,
@@ -743,7 +745,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetLocationIncoherentWithWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Monday->value => [
                     'day' => WeekDayEnum::Monday->value,
@@ -788,7 +790,7 @@ class TimesheetApiTest extends ApiTestCase
     public function testCreateTimesheetLocationIncoherentWithNotWorkedDay(): void
     {
         $response = $this->postTimesheet($this->defaultTimesheetPayload([
-            'endPeriod' => '2024-11-30',
+            'endPeriod' => self::DEFAULT_END_PERIOD,
             'workDays' => [
                 WeekDayEnum::Sunday->value => [
                     'day' => WeekDayEnum::Sunday->value,
@@ -836,7 +838,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => self::$user,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets/'.$timesheet->getUuid());
+        $response = self::$client->request('GET', self::API_EMPLOYEES .self::$user->getUuid().'/timesheets/'.$timesheet->getUuid());
 
         $data = $response->toArray();
 
@@ -860,7 +862,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid());
+        $response = self::$client->request('GET', self::API_EMPLOYEES .$employee->getUuid().'/timesheets/'.$timesheet->getUuid());
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -911,7 +913,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => self::$user,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets');
+        $response = self::$client->request('GET', self::API_EMPLOYEES .self::$user->getUuid().'/timesheets');
 
         $data = $response->toArray();
 
@@ -944,7 +946,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets');
+        $response = self::$client->request('GET', self::API_EMPLOYEES .$employee->getUuid().'/timesheets');
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -972,7 +974,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->many(5)->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets');
+        $response = self::$client->request('GET', self::API_EMPLOYEES .$employee->getUuid().'/timesheets');
 
         $data = $response->toArray();
 
