@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 
 class TimesheetServiceTest extends TestCase
 {
+    const string DEFAULT_END_PERIOD = '2024-01-07';
     private TimesheetRepository $repository;
     private TimesheetService $service;
 
@@ -51,7 +52,7 @@ class TimesheetServiceTest extends TestCase
     {
         $employee = new User();
         $start = new \DateTimeImmutable('2024-01-01');
-        $end = new \DateTimeImmutable('2024-01-07');
+        $end = new \DateTimeImmutable(self::DEFAULT_END_PERIOD);
 
         $this->repository
             ->expects($this->once())
@@ -68,7 +69,7 @@ class TimesheetServiceTest extends TestCase
     {
         $employee = new User();
         $start = new \DateTimeImmutable('2024-01-01');
-        $end = new \DateTimeImmutable('2024-01-07');
+        $end = new \DateTimeImmutable(self::DEFAULT_END_PERIOD);
 
         $this->repository
             ->expects($this->once())
@@ -86,7 +87,7 @@ class TimesheetServiceTest extends TestCase
         $end = new \DateTimeImmutable('2024-01-10');
         [$start, $calculatedEnd] = $this->service->timesheetPeriodCalculator($end);
 
-        $this->assertEquals('2024-01-07', $start->format('Y-m-d'));
+        $this->assertEquals(self::DEFAULT_END_PERIOD, $start->format('Y-m-d'));
         $this->assertEquals('2024-01-13', $calculatedEnd->format('Y-m-d'));
     }
 }
