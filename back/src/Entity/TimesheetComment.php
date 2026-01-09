@@ -17,6 +17,7 @@ use App\State\Processor\TimesheetCommentsProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TimesheetCommentRepository::class)]
 #[ApiResource(
@@ -24,13 +25,11 @@ use Symfony\Component\Uid\Uuid;
         new Get(
             uriTemplate: '/timesheet-comment/{uuid}',
             normalizationContext: ['groups' => ['timesheet:comment:read', 'timesheet:comment:item:read']],
-            //            security: "is_granted('".PermissionEnum::CAN_VIEW_TIMESHEET->value."', object)"
         ),
         new Post(
             uriTemplate: '/timesheet-comments',
             normalizationContext: ['groups' => ['timesheet:comment:read']],
             denormalizationContext: ['groups' => ['timesheet:comment:write']],
-            validationContext: ['groups' => ['Default', 'create']],
             output: false,
             processor: TimesheetCommentsProcessor::class
         ),
@@ -76,19 +75,18 @@ class TimesheetComment
 
     #[ORM\Column(length: 255)]
     #[Groups(['timesheet:comment:write', 'timesheet:comment:read', 'timesheet:item:read', 'timesheet:write'])]
-    // todo : ajouter assert
+    #[Assert\NotBlank()]
     private ?string $comment = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['timesheet:item:read', 'timesheet:comment:read'])]
-    // todo : ajouter assert
     private ?User $createdBy = null;
 
     #[ORM\ManyToOne(inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['timesheet:comment:write'])]
-    // / todo : ajouter assert
+    #[Assert\NotBlank()]
     private ?Timesheet $timesheet = null;
 
     #[ORM\Column(enumType: CommentStatusEnum::class, options: ['default' => CommentStatusEnum::NEW])]

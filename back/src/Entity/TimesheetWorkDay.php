@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TimesheetWorkDayRepository::class)]
-#[ValidWorkdays]
+#[ValidWorkdays(groups: ['create'])]
 class TimesheetWorkDay
 {
     use TimestampableTrait;
@@ -24,12 +24,12 @@ class TimesheetWorkDay
 
     #[ORM\ManyToOne(inversedBy: 'workDays', fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(groups: ['create'])]
     private Timesheet $timesheet;
 
     #[ORM\Column(enumType: WeekDayEnum::class)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank(groups: ['create'])]
     private WeekDayEnum $day;
 
     #[ORM\Column(options: ['default' => 0])]

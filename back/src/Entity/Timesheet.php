@@ -107,9 +107,9 @@ use Symfony\Component\Validator\Constraints as Assert;
     denormalizationContext: ['groups' => ['timesheet:write', 'timesheet:calculate-period']],
     validationContext: ['groups' => 'Default', 'create', 'edit']
 )]
-#[ValidStartEndDate(groups: ['timesheet:write'])]
-#[ValidTimesheet(groups: ['timesheet:write'])]
-#[NoTimesheetOverlap(groups: ['timesheet:write'])]
+#[ValidStartEndDate(groups: ['create'])]
+#[ValidTimesheet(groups: ['create'])]
+#[NoTimesheetOverlap(groups: ['create'])]
 #[ApiFilter(TimesheetSearchFilter::class, properties: [
     'uuid',
     'startPeriod',
@@ -135,19 +135,19 @@ class Timesheet implements TimesheetStatusInterface
     #[ORM\ManyToOne(inversedBy: 'timesheets')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['timesheet:read', 'timesheet:write', 'timesheet:item:read'])]
-    #[Assert\NotBlank(groups: ['timesheet:write'])]
+    #[Assert\NotBlank(groups: ['create'])]
     private ?User $employee = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['timesheet:item:read'])]
-    #[Assert\NotBlank(groups: ['timesheet:write'])]
+    #[Assert\NotBlank(groups: ['create'])]
     private ?\DateTimeImmutable $startPeriod = null;
     #[Groups(['timesheet:read'])]
     private ?string $formattedStartPeriod = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
-    #[Assert\NotBlank(groups: ['timesheet:write'])]
+    #[Assert\NotBlank(groups: ['create'])]
     private ?\DateTimeImmutable $endPeriod = null;
 
     #[Groups(['timesheet:read'])]
@@ -156,7 +156,7 @@ class Timesheet implements TimesheetStatusInterface
     /** @var Collection<int, TimesheetWorkDay> */
     #[ORM\OneToMany(targetEntity: TimesheetWorkDay::class, mappedBy: 'timesheet', cascade: ['persist'], orphanRemoval: true)]
     #[Groups(['timesheet:read', 'timesheet:write'])]
-    #[Assert\Valid(groups: ['timesheet:write'])]
+    #[Assert\Valid(groups: ['create'])]
     private Collection $workDays;
 
     #[ORM\Column(options: ['default' => 0])]
