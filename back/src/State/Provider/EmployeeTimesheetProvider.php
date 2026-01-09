@@ -26,12 +26,12 @@ readonly class EmployeeTimesheetProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $employeeUuid = $uriVariables['employeeUuid'];
+        $employeeUuid = Uuid::fromString($uriVariables['employeeUuid']);
         /** @var Uuid $timesheetUuid */
         $timesheetUuid = $uriVariables['uuid'];
 
         $timesheet = $this->timesheetService->getByEmployee(
-            $employeeUuid, $timesheetUuid->toRfc4122()
+            $employeeUuid, $timesheetUuid
         );
 
         if (!$timesheet) {
