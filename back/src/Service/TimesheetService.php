@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Timesheet;
 use App\Entity\User;
 use App\Repository\TimesheetRepository;
+use Symfony\Component\Uid\Uuid;
 
 readonly class TimesheetService
 {
@@ -18,7 +19,7 @@ readonly class TimesheetService
         return $this->timesheetRepository->findOneBy(['id' => $id]);
     }
 
-    public function getByEmployee(string $employeeUuid, string $uuid): ?Timesheet
+    public function getByEmployee(Uuid $employeeUuid, Uuid $uuid): ?Timesheet
     {
         return $this->timesheetRepository->findOneByEmployee($employeeUuid, $uuid);
     }
