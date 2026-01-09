@@ -4,12 +4,14 @@ namespace App\Tests\Api;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
 use ApiPlatform\Symfony\Bundle\Test\Client;
+use App\Entity\Timesheet;
 use App\Entity\User;
 use App\Enum\Entity\WeekDayEnum;
 use App\Enum\ResponseMessage\ErrorMessageEnum;
 use App\Enum\ResponseMessage\SuccessMessageEnum;
 use App\Factory\TimesheetFactory;
 use App\Factory\UserFactory;
+use App\Repository\UserRepository;
 use App\Story\DefaultUseCaseStory;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -148,7 +150,6 @@ class TimesheetApiTest extends ApiTestCase
             'json' => $payload,
         ]);
     }
-
     public function assertTimesheet(array $data): void
     {
         $this->assertSame('Timesheet', $data['@type']);
@@ -171,6 +172,23 @@ class TimesheetApiTest extends ApiTestCase
         $this->assertArrayHasKey('location', $monday);
         $this->assertArrayHasKey('am', $monday['location']);
         $this->assertArrayHasKey('pm', $monday['location']);
+    }
+
+    public function assertComment(array $data): void
+    {
+        $this->assertArrayHasKey('uuid', $data);
+        $this->assertArrayHasKey('comment', $data);
+        $this->assertArrayHasKey('createdBy', $data);
+        $this->assertArrayHasKey('createdAt', $data);
+        $this->assertArrayHasKey('formattedCreatedAt', $data);
+        $this->assertArrayHasKey('translateStatus', $data);
+
+        $this->assertIsArray($data['createdBy']);
+
+        $createdByData = $data['createdBy'];
+
+        $this->assertArrayHasKey('uuid', $createdByData);
+        $this->assertArrayHasKey('fullName', $createdByData);
     }
 
     /**
@@ -818,7 +836,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => self::$user,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'.self::$user->getUuid().'/timesheets/'.$timesheet->getUuid());
 
         $data = $response->toArray();
 
@@ -842,7 +860,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid());
 
         self::assertResponseStatusCodeSame(403);
         self::assertJsonContains([
@@ -862,6 +880,7 @@ class TimesheetApiTest extends ApiTestCase
      */
     public function testGetTimesheetByManager(): void
     {
+
         $employee = UserFactory::createOne([
             'manager' => self::$user,
         ]);
@@ -870,7 +889,7 @@ class TimesheetApiTest extends ApiTestCase
             'employee' => $employee,
         ])->withWorkDays()->create();
 
-        $response = self::$client->request('GET', '/api/employees/'.$employee->getUuid().'/timesheets/'.$timesheet->getUuid()->toRfc4122());
+        $response = self::$client->request('GET', sprintf("/api/employees/%s/timesheets/%s", $employee->getUuid(), $timesheet->getUuid()));
 
         $data = $response->toArray();
 
@@ -967,5 +986,110 @@ class TimesheetApiTest extends ApiTestCase
         $timesheet = $data['member'][0];
 
         $this->assertTimesheet($timesheet);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Valider un timesheet autorisé
+     */
+    public function testValidateTimesheet(): void
+    {
+
+        $employee = UserFactory::createOne([
+            'manager' => self::$user,
+        ]);
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->create();
+
+        $response = self::$client->request('PATCH', sprintf("/api/timesheets/%s/valid", $timesheet->getUuid()->toRfc4122()), [
+            'json' => [],
+        ]);
+
+        self::assertResponseStatusCodeSame(200);
+        self::assertJsonContains([
+            'message' => SuccessMessageEnum::TS_VALIDATED->value,
+            'uuid' => $timesheet->getUuid()->toRfc4122()
+        ]);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Ajouter un commentaire sur un timesheet
+     */
+    public function testAddTimesheetComment(): void
+    {
+
+        $employee = UserFactory::createOne([
+            'manager' => self::$user,
+        ]);
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->create();
+
+        $timesheetIri = $this->findIriBy(Timesheet::class, ['uuid' => $timesheet->getUuid()]);
+
+        $response = self::$client->request('POST',"/api/timesheet-comments", [
+            'json' => [
+                'timesheet' => $timesheetIri,
+                'comment' => 'test',
+                'propertyPath' => ''
+            ],
+        ]);
+
+        self::assertResponseStatusCodeSame(200);
+        self::assertJsonContains([
+            'message' => SuccessMessageEnum::TS_COMMENT_ADDED->value
+        ]);
+
+        $data = $response->toArray()['comment'];
+
+        $this->assertComment($data);
+    }
+
+    /**
+     * @throws ClientExceptionInterface
+     * @throws DecodingExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws TransportExceptionInterface
+     *
+     * Ajout non autorisé d'un commentaire
+     */
+    public function testNotAuthorizedAddTimesheetComment(): void
+    {
+
+        $employee = UserFactory::createOne();
+
+        $timesheet = TimesheetFactory::new([
+            'employee' => $employee,
+        ])->withWorkDays()->create();
+
+        $timesheetIri = $this->findIriBy(Timesheet::class, ['uuid' => $timesheet->getUuid()]);
+
+        $response = self::$client->request('POST',"/api/timesheet-comments", [
+            'json' => [
+                'timesheet' => $timesheetIri,
+                'comment' => 'test',
+                'propertyPath' => ''
+            ],
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+        self::assertJsonContains([
+            'description' => ErrorMessageEnum::TS_COMMENT_ADD_NOT_AUTHORIZED->value
+        ]);
     }
 }
