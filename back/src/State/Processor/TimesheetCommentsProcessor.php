@@ -34,10 +34,12 @@ readonly class TimesheetCommentsProcessor implements ProcessorInterface
             return $data;
         }
 
+        $timesheet = $data->getTimesheet();
+
         $user = $this->security->getUser();
 
-        if (!$this->security->isGranted(PermissionEnum::CAN_ADD_TIMESHEET_COMMENT->value, $data)) {
-            throw new AccessDeniedHttpException('access denied');
+        if (!$this->security->isGranted(PermissionEnum::CAN_ADD_TIMESHEET_COMMENT->value, $timesheet)) {
+            throw new AccessDeniedHttpException(ErrorMessageEnum::TS_COMMENT_ADD_NOT_AUTHORIZED->value);
         }
 
         $data
