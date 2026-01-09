@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\Timesheet;
 use App\Entity\User;
+use App\Enum\Entity\TimesheetStatusEnum;
 use App\Enum\PermissionEnum;
 use App\Enum\ResponseMessage\ErrorMessageEnum;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -42,6 +43,7 @@ class TimesheetVoter extends Voter
             PermissionEnum::CAN_EDIT_TIMESHEET->value => $this->canEdit($timesheet, $user, $vote),
             PermissionEnum::CAN_VIEW_TIMESHEET_COMMENT_COLLECTION->value => $this->canViewCommentCollection($timesheet, $user, $vote),
             PermissionEnum::CAN_VALID_TIMESHEET->value => $this->canValid($timesheet, $user, $vote),
+            PermissionEnum::CAN_ADD_TIMESHEET_COMMENT->value => $this->canAddComment($timesheet, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
@@ -120,6 +122,26 @@ class TimesheetVoter extends Voter
         ) {
             $vote?->addReason(sprintf(
                 'The logged in user (username: %s) can\'t access to this resource. Only Manager for his subordinates can do this.',
+                $user->getUserIdentifier()
+            ));
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function canAddComment(Timesheet $timesheet, User $user, ?Vote $vote): bool
+    {
+        if (
+            (
+                !$timesheet->isOwner($user)
+                && !$user->getSubordinates()->contains($timesheet->getEmployee())
+            )
+            || $timesheet->getStatus() === TimesheetStatusEnum::VALID
+        ) {
+            $vote?->addReason(sprintf(
+                ErrorMessageEnum::TS_COMMENT_ADD_NOT_AUTHORIZED->value,
                 $user->getUserIdentifier()
             ));
 
