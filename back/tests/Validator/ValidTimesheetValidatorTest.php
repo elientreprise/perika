@@ -53,13 +53,6 @@ class ValidTimesheetValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function testValidatorIgnoresNull(): void
-    {
-        $this->validator->validate(null, new ValidTimesheet());
-
-        $this->assertNoViolation();
-    }
-
     public function testValidatorIgnoresInvalidValue(): void
     {
         $this->validator->validate(null, new ValidTimesheet());
