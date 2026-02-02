@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { register } from "../services/auth.ts";
+import { register } from "../features/auth/services/auth.ts";
 
 export default function Register() {
     const [email, setEmail] = useState("");

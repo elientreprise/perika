@@ -8,3 +8,4 @@ api_platform:
             vary: ['Content-Type', 'Authorization', 'Origin']
         normalization_context:
             skip_null_values: false
+    enable_link_security: true

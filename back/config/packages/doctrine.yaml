@@ -27,7 +27,9 @@ doctrine:
 when@test:
     doctrine:
         dbal:
+            url: '%env(resolve:DATABASE_URL)%'
             dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            use_savepoints: true
 when@prod:
     doctrine:
         orm:

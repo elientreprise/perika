@@ -5,17 +5,20 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
 use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\CheckAuthAction;
 use App\Dto\Response\LinkEmployeeResponse;
+use App\Entity\Trait\TimestampableTrait;
+use App\Enum\Entity\CoreUserRoleEnum;
 use App\Enum\PermissionEnum;
 use App\Repository\UserRepository;
-use App\State\LinkEmployeeProcessor;
-use App\State\MeProvider;
+use App\State\Processor\LinkEmployeeProcessor;
 use App\State\Processor\UserProcessor;
+use App\State\Provider\MeProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -92,6 +95,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    use TimestampableTrait;
+
+    // todo remplacer par une propriété dans l'entité contract
+    public const float MAX_TOTAL_TIME_PROJECT = 37;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer', unique: true)]
@@ -100,7 +108,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'uuid', unique: true)]
     #[ApiProperty(identifier: true)]
-    #[Groups(['employee:read', 'link-employee:read'])]
+    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read', 'timesheet:comment:read'])]
     private Uuid $uuid;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
@@ -115,12 +123,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read', 'timesheet:comment:read'])]
     #[Assert\NotBlank(message: 'The firstName are required', groups: ['edit'])]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read', 'timesheet:comment:read'])]
     #[Assert\NotBlank(message: 'The lastName are required', groups: ['edit'])]
     private ?string $lastName = null;
 
@@ -129,7 +137,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'The position are required', groups: ['edit'])]
-    #[Groups(['employee:read', 'edit'])]
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read', 'timesheet:comment:read'])]
     private ?string $position = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
@@ -139,8 +147,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Assert\NotBlank(message: 'The hire date are required', groups: ['edit'])]
-    #[Groups(['employee:read', 'edit'])]
-    private ?\DateTimeImmutable $hire_date = null;
+    #[Groups(['employee:read', 'edit', 'timesheet:item:read', 'timesheet:comment:read'])]
+    private ?\DateTimeImmutable $hireDate = null;
 
     #[ORM\Column]
     #[Groups(['employee:read'])]
@@ -156,7 +164,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?\DateTimeImmutable $birthDate = null;
 
     #[ORM\ManyToOne(targetEntity: self::class)]
-    #[Groups(['employee:read'])]
+    #[Groups(['employee:read', 'timesheet:item:read', 'timesheet:comment:read'])]
     private ?User $manager = null;
 
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'manager')]
@@ -174,11 +182,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['link-employee:write'])]
     public array $employeeUuids = [];
 
+    /**
+     * @var Collection<int, Timesheet>
+     */
+    #[ORM\OneToMany(targetEntity: Timesheet::class, mappedBy: 'employee')]
+    #[Link(toProperty: 'employee')]
+    private Collection $timesheets;
+
     public function __construct()
     {
         $this->uuid = Uuid::v4();
         $this->isActive = true;
         $this->subordinates = new ArrayCollection();
+        $this->timesheets = new ArrayCollection();
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -293,12 +311,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getHireDate(): ?\DateTimeImmutable
     {
-        return $this->hire_date;
+        return $this->hireDate;
     }
 
-    public function setHireDate(?\DateTimeImmutable $hire_date): static
+    public function setHireDate(?\DateTimeImmutable $hireDate): static
     {
-        $this->hire_date = $hire_date;
+        $this->hireDate = $hireDate;
 
         return $this;
     }
@@ -375,32 +393,88 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->subordinates->remove($employee);
     }
 
-    #[Groups(['employee:read', 'link-employee:read'])]
+    #[Groups(['employee:read', 'link-employee:read', 'timesheet:item:read', 'timesheet:comment:read'])]
     /**
      * @return string
      *                Concat firstname and lastname
      */
     public function getFullName(): string
     {
-        return sprintf('%s %s', $this->firstName, $this->lastName);
+        if(!$this->firstName || !$this->lastName) {
+            return '';
+        }
+
+        return sprintf('%s %s', ucfirst($this->firstName), ucfirst($this->lastName));
     }
 
-    #[Groups(['employee:read'])]
+    #[Groups(['employee:read', 'timesheet:item:read'])]
     /**
      * @return string
-     *                Return seniority calculated between hire_date and now
+     *                Return seniority calculated between hireDate and now
      *                format on "%y years %m months %d days"
      */
     public function getSeniority(): string
     {
         $now = new \DateTimeImmutable('now');
 
-        if (!$this->hire_date) {
+        if (!$this->hireDate) {
             return 0;
         }
 
-        $interval = date_diff($this->hire_date, $now);
+        return date_diff($this->hireDate, $now)->format('%y years %m months %d days');
+    }
 
-        return $interval->format('%y years %m months %d days');
+    /**
+     * @return Collection<int, Timesheet>
+     */
+    public function getTimesheets(): Collection
+    {
+        return $this->timesheets;
+    }
+
+    public function addTimesheet(Timesheet $timesheet): static
+    {
+        if (!$this->timesheets->contains($timesheet)) {
+            $this->timesheets->add($timesheet);
+            $timesheet->setEmployee($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTimesheet(Timesheet $timesheet): static
+    {
+        // set the owning side to null (unless already changed)
+        if ($this->timesheets->removeElement($timesheet) && $timesheet->getEmployee() === $this) {
+            $timesheet->setEmployee(null);
+        }
+
+        return $this;
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->roles, true);
+    }
+
+    public function isManager(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::MANAGER->value);
+    }
+
+    public function isRh(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::RH->value);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(CoreUserRoleEnum::ADMIN->value);
+    }
+
+    public function setUuid(Uuid $uuid): User
+    {
+        $this->uuid = $uuid;
+        return $this;
     }
 }

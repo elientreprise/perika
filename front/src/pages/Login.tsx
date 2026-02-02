@@ -1,8 +1,8 @@
 import React, {useContext, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import { login } from "../services/auth.ts";
-import type {LoginPayload} from "../types/Auth/LoginPayload.ts";
-import {AuthContext} from "../contexts/AuthContext.tsx";
+import { login } from "../features/auth/services/auth.ts";
+import {AuthContext} from "../features/auth/contexts/AuthContext.tsx";
+import type {LoginPayload} from "../features/auth/types/LoginPayload.ts";
 
 export default function Login() {
     const [email, setEmail] = useState<string>("");

@@ -4,7 +4,6 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Enum\PermissionEnum;
-use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -29,8 +28,6 @@ class EmployeeVoter extends Voter
         $user = $token->getUser();
 
         if (!$user instanceof User) {
-            $vote?->addReason('The user is not logged in.');
-
             return false;
         }
 
@@ -41,6 +38,7 @@ class EmployeeVoter extends Voter
             PermissionEnum::CAN_EDIT_EMPLOYEE->value => $this->canEdit($employee, $user, $vote),
             PermissionEnum::CAN_VIEW_EMPLOYEE->value => $this->canView($employee, $user, $vote),
             PermissionEnum::CAN_ADD_SUBORDINATES->value => $this->canAddSubordinate($employee, $user, $vote),
+            PermissionEnum::CAN_VIEW_TIMESHEET_COLLECTION->value => $this->canViewTimesheetCollection($employee, $user, $vote),
             default => throw new \LogicException('This code should not be reached!'),
         };
     }
@@ -59,9 +57,10 @@ class EmployeeVoter extends Voter
     private function canView(User $employee, User $user, ?Vote $vote): bool
     {
         if (
-            (!in_array('ROLE_RH', $user->getRoles())
-                || !in_array('ROLE_MANAGER', $user->getRoles()))
-            && $user->getUserIdentifier() !== $employee->getUserIdentifier()
+            !$user->isRh()
+            && !$user->isManager()
+            && !$user->getSubordinates()->contains($employee)
+            && $user !== $employee
         ) {
             $vote?->addReason(sprintf(
                 'The logged in user (username: %s) can\'t access to this resource. Only HR, Manager or user him self can do this.',
@@ -74,11 +73,20 @@ class EmployeeVoter extends Voter
         return true;
     }
 
-    /**
-     * @throws ExceptionInterface
-     */
+    private function canViewTimesheetCollection(User $employee, User $user, ?Vote $vote): bool
+    {
+        if (
+            !$this->canView($employee, $user, $vote)
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     private function canAddSubordinate(User $employee, User $user, ?Vote $vote): bool
     {
+        // todo ajouter la logique
         return true;
     }
 }
